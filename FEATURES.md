@@ -97,11 +97,25 @@ Connect Gmail, Notion, Google Calendar and GitHub once via `/mcp`, set `integrat
 | 39 | **Daily planner** ✅ | Plan my day and recap it from recent memory now; richer once calendar + mail are connected. |
 | 40 | **Universal recall** ✅ | *"What did I say about X?"* — searches all my memory + the conversation (`jarvis.recall`). |
 | 42 | **"What's new" briefings** ✅ | Tracks topics I follow (`memory/topics.md`) and uses web search to surface what changed. |
-| 43 | **Full system control + auto-apply** ✅ | Drives any app by voice (mouse + keyboard + screen reading): reads my Telegram internship bot and applies on my behalf, fills forms, operates the whole PC — **always confirming before it submits, sends, buys or deletes, and never typing secrets.** |
+| 43 | **Full system control by voice** ✅ | Drives any app with mouse, keyboard and screen reading — opens apps, fills forms, operates the whole PC hands-free — **always confirming before it submits, sends, buys or deletes, and never typing secrets.** |
+
+## 💡 Exploring (achievable, not yet scheduled)
+
+Ideas on the table — small, local, and within reach of the current design.
+
+| Idea | What it would do |
+|:--|:--|
+| **Clipboard genie** | *"Explain / translate / tidy what I just copied."* |
+| **Focus mode** | One word hushes every nudge while you're deep in work. |
+| **Your own document brain** | Point JARVIS at a folder; it answers from your notes and PDFs, fully offline. |
+| **Spoken diff review** | *"Walk me through my changes"* before you commit. |
+| **Make it yours** | Choose your own wake word and voice. |
+| **Zero-cloud fallback** | A small on-device model fields the basics when offline or saving usage. |
+| **Usage radar** | How your Claude usage is trending, and when a session will rotate. |
 
 ---
 
 <div align="center">
-<sub>Features 1–7 ship today. 8–15 need only a one-time connector sign-in. 16–20 are the near-term roadmap.</sub>
-<br/><sub>Priorities set with Nishant: <b>Email · Notion · Calendar · Code brain-bursting</b> first.</sub>
+<sub>Most of this is already shipping; the connector features need only a one-time <code>/mcp</code> sign-in.</sub>
+<br/><sub>Early priorities: <b>Email · Notion · Calendar · Code brain-bursting</b>.</sub>
 </div>

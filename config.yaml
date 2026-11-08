@@ -35,7 +35,7 @@ session:
 # Where JARVIS works by default, and named projects for "switch project to <name>".
 project_dir: workspace
 projects: {}
-  # dume: "C:/Users/hp/Desktop/Nishant Sharma B.TECH/Project/DUME"
+  # dume: "C:/path/to/your/project"
 
 voice:
   tts_voice: en-GB-RyanNeural

@@ -51,25 +51,30 @@
 
 ## ✦ Roadmap &amp; progress
 
-Built in layers — **everything that doesn't need an external sign-in is done**; the rest is one `/mcp` away.
+JARVIS grows in layers — and **everything that doesn't need an external sign-in is already shipping.** The vision keeps widening from there.
 
 **✅ Working today**
-- **Knows &amp; learns you** — identity, an editable rulebook, learns your corrections *and* your website style, all on a tight token budget
-- **Always there** — login autostart, a system-tray presence, real conversation, the movie-style HUD
+- **Knows &amp; learns you** — identity, an editable rulebook, and a mind that learns your corrections *and* your coding &amp; design style over time — all on a tight token budget
+- **Always there** — starts at login, lives in the tray, holds a true back-and-forth conversation behind the reactive HUD
 - **Safe hands** — `rm -rf` hard-blocked; every send / submit / delete asks first
-- **Speaks offline too** — falls back to a local voice when the network drops
-- **Knowledge** — universal recall over everything it remembers, *"what's new"* briefings, research with citations, lecture/meeting transcription
-- **Developer buddy** — scaffolds sites in your stack, live preview + self-review, design-to-code in your patterns, an SEO audit, PR &amp; deploy helpers (via `gh`)
-- **Day-to-day** — reminders &amp; proactive nudges, named routines, a daily plan &amp; recap
-- **Email &amp; notes** — Gmail and Notion connected and live: mail triage by sender, Notion tasks
+- **Speaks offline too** — drops to a local voice the moment the network does
+- **Knowledge engine** — instant recall across everything it remembers, *"what's new"* briefings, researched answers *with citations*, and lecture/meeting transcription
+- **Developer co-pilot** — scaffolds sites in your stack, live preview with self-review, design-to-code in your own patterns, a built-in SEO audit, and PR &amp; deploy helpers
+- **Runs your day** — reminders, proactive nudges, named routines, a daily plan &amp; recap, hands-free control of any app
+- **Email &amp; notes, live** — Gmail and Notion wired in: triage mail by sender, pull Notion tasks at a word
 
 **🔌 One sign-in away** — authorize once via `/mcp`
-- **Google Calendar** — your schedule, reminders, clash warnings
-- then: deadline tracker, morning brief, multi-account inbox, replies drafted in your voice
+- **Google Calendar** — your schedule, smart reminders, clash warnings
+- then: a deadline tracker, a spoken morning brief, a multi-account inbox, and replies drafted *in your own voice*
 
-**🛠 Next up**
-- Live-run the **Telegram internship auto-apply** (drives the PC; confirms before it ever submits)
-- Revision / study mode, weekly recap, richer rhythm-aware nudges
+**🛠 On the horizon** — achievable next steps we're reaching for
+- **Clipboard genie** — *"explain / translate / tidy what I just copied"*
+- **Focus mode** — one word hushes every nudge while you're deep in work
+- **Your own document brain** — point JARVIS at a folder and it answers from your notes and PDFs, fully offline
+- **Spoken diff review** — *"walk me through my changes"* before you commit
+- **Make it yours** — pick your wake word and your voice
+- **Zero-cloud fallback** — a small on-device model fields the basics when you're offline or saving usage
+- **Usage radar** — tells you how your Claude usage is trending and when a session will rotate
 
 📋 Full detail, feature by feature → **[FEATURES.md](FEATURES.md)**
 
