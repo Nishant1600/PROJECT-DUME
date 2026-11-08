@@ -143,6 +143,52 @@ def synthesize_to_wav(text: str, path: str, voice: str = DEFAULT_VOICE, rate: st
     return path
 
 
+def synth_offline(text: str, sample_rate: int = 24000, piper_exe: str | None = None,
+                  piper_model: str | None = None) -> np.ndarray:
+    """Offline TTS fallback (feature #20) — used when edge-tts can't reach the network.
+
+    Prefers Piper (a local neural voice) if it's configured and present; otherwise uses
+    Windows' built-in SAPI voice, which is always available offline with no download.
+    Returns float32 mono samples at ``sample_rate`` (empty on failure).
+    """
+    import os
+    import shutil
+    import subprocess
+    import tempfile
+
+    text = (text or "").strip()
+    if not text:
+        return np.zeros(0, dtype=np.float32)
+    d = tempfile.mkdtemp(prefix="jarvis-tts-")
+    wav = os.path.join(d, "o.wav")
+    try:
+        if piper_exe and piper_model and os.path.exists(piper_exe) and os.path.exists(piper_model):
+            subprocess.run([piper_exe, "-m", piper_model, "-f", wav],
+                           input=text.encode("utf-8"), capture_output=True, timeout=60)
+        elif os.name == "nt":
+            txt = os.path.join(d, "t.txt")
+            with open(txt, "w", encoding="utf-8") as f:
+                f.write(text)
+            ps = ("Add-Type -AssemblyName System.Speech;"
+                  f"$t=[IO.File]::ReadAllText('{txt}');"
+                  "$s=New-Object System.Speech.Synthesis.SpeechSynthesizer;"
+                  f"$s.SetOutputToWaveFile('{wav}');$s.Speak($t);$s.Dispose()")
+            subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps],
+                           capture_output=True, timeout=60)
+        else:
+            return np.zeros(0, dtype=np.float32)
+        if not os.path.exists(wav) or os.path.getsize(wav) < 64:
+            return np.zeros(0, dtype=np.float32)
+        with open(wav, "rb") as f:
+            data = f.read()
+        return decode_mp3(data, sample_rate)   # miniaudio decodes WAV too
+    except Exception as exc:
+        log.warning("offline TTS failed: %s: %s", type(exc).__name__, exc)
+        return np.zeros(0, dtype=np.float32)
+    finally:
+        shutil.rmtree(d, ignore_errors=True)
+
+
 def _tone(sample_rate: int, notes=((880.0, 0.07), (1320.0, 0.09)), gain=0.25) -> np.ndarray:
     parts = []
     for freq, dur in notes:
@@ -178,12 +224,17 @@ class Speaker:
     IDLE_CLOSE_SECONDS = 1.5  # close the output device after this long with nothing to play
 
     def __init__(self, voice: str = DEFAULT_VOICE, rate: str = "+0%", volume: str = "+0%",
-                 pitch: str = "+0Hz", device=None):
+                 pitch: str = "+0Hz", device=None, offline_fallback: bool = True,
+                 piper_exe: str | None = None, piper_model: str | None = None):
         self.voice = voice
         self.rate = rate
         self.volume = volume
         self.pitch = pitch
         self.device = device
+        self.offline_fallback = offline_fallback   # #20: speak offline if the network is down
+        self.piper_exe = piper_exe
+        self.piper_model = piper_model
+        self._warned_offline = False
         self.sample_rate = self._output_rate(device)
 
         self._lock = threading.Lock()
@@ -322,7 +373,14 @@ class Speaker:
                         audio = trim_silence(decode_mp3(mp3, self.sample_rate), self.sample_rate)
                     log.debug("TTS %.2fs for %r", time.perf_counter() - t0, text[:50])
                 except Exception as exc:
-                    log.warning("TTS failed for %r: %s: %s", text[:60], type(exc).__name__, exc)
+                    log.warning("online TTS failed for %r: %s: %s", text[:60], type(exc).__name__, exc)
+                    if self.offline_fallback and gen == self._gen:
+                        if not self._warned_offline:
+                            log.warning("falling back to the offline voice")
+                            self._warned_offline = True
+                        off = synth_offline(text, self.sample_rate, self.piper_exe, self.piper_model)
+                        if off.size:
+                            audio = off
                 if audio is None or audio.size == 0 or gen != self._gen:
                     self._finish()
                     continue

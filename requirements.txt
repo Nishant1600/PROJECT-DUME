@@ -22,3 +22,6 @@ pillow
 uiautomation
 rapidocr-onnxruntime
 pyperclip
+
+# System-tray presence (--tray); optional - JARVIS runs without it
+pystray

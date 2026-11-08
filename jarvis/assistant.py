@@ -37,6 +37,8 @@ class Assistant:
         self.speaker = speaker          # Speaker or None (text mode)
         self.listener = listener        # Listener or None
         self.policy = get_policy()
+        from .routines import Routines
+        self.routines = Routines()      # #18: named routines triggered by phrase
         self._busy = threading.Lock()   # one turn at a time
         self._pending: _Pending | None = None
         self._pending_lock = threading.Lock()
@@ -154,6 +156,13 @@ class Assistant:
                 self.bus.publish(B.NOTICE, text="Shutting down.", level="info")
                 self.request_shutdown()
             return
+
+        # #18: a saved routine's trigger phrase expands into its instruction for the brain
+        routine = self.routines.match(text)
+        if routine:
+            name, prompt = routine
+            self.bus.publish(B.NOTICE, text=f"Running the {name} routine.", level="info")
+            text = prompt
 
         self.bus.set_state("thinking")
         stripper, splitter = TagStripper(), SentenceSplitter()

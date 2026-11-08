@@ -45,9 +45,9 @@ Connect Gmail, Notion, Google Calendar and GitHub once via `/mcp`, set `integrat
 |:--:|:--|:--|
 | 16 | **Proactive nudges** | Learns your rhythm and speaks up on its own: *“You usually commit around now — want me to run the tests?”*, *“That meeting starts in 10 minutes.”* |
 | 17 | **Daily & weekly recap** | An end-of-day summary of what you did and what's still open, written to Notion or spoken back. |
-| 18 | **Routines you name** | *“Every morning, brief me and open my project.”* Save multi-step routines and trigger them by one phrase. |
-| 19 | **System tray presence** | Lives quietly in the tray with a status dot; the HUD opens only when you summon it, so startup is invisible until you speak. |
-| 20 | **Your voice, offline fallback** | A premium cloud voice option, and a fully-offline mode (Piper) for when there's no internet. |
+| 18 | **Routines you name** ✅ | *”Save routine morning: brief me and open my project”* then *”run morning”* — saved multi-step instructions triggered by one phrase (`jarvis.routines`). |
+| 19 | **System tray presence** ✅ | A tray dot that changes colour with JARVIS's state; `--tray --no-window` starts invisible and opens the HUD only when you summon it (`jarvis.tray`). |
+| 20 | **Your voice, offline fallback** ✅ | If the network is down, speech falls back automatically to a local voice — Piper if configured, else the built-in Windows voice (`synth_offline`). |
 
 ## 🚀 Phase 2 — being built now (21–43)
 

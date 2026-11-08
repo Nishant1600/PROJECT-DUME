@@ -145,6 +145,7 @@ def main() -> None:
     ap.add_argument("--no-voice", action="store_true", help="HUD only, no microphone")
     ap.add_argument("--text", action="store_true", help="plain terminal, no HUD")
     ap.add_argument("--no-window", action="store_true", help="don't open the HUD window (serve only)")
+    ap.add_argument("--tray", action="store_true", help="run in the system tray; open the HUD on demand")
     ap.add_argument("--install-autostart", action="store_true", help="start JARVIS at login")
     ap.add_argument("--uninstall-autostart", action="store_true", help="stop starting at login")
     ap.add_argument("--config")
@@ -173,7 +174,8 @@ def main() -> None:
         from .audio.stt import Listener
         from .audio.tts import Speaker
         v = cfg["voice"]
-        speaker = Speaker(voice=v["tts_voice"], rate=v["tts_rate"])
+        speaker = Speaker(voice=v["tts_voice"], rate=v["tts_rate"],
+                          piper_exe=v.get("piper_exe"), piper_model=v.get("piper_model"))
         listener = Listener(model_size=v["whisper_model"], device=v["whisper_device"],
                             compute_type=v["whisper_compute_type"], language=v.get("language"))
 
@@ -197,10 +199,28 @@ def main() -> None:
     assistant._shutdown = shutdown
 
     win = None
-    if not args.no_window:
-        from .window import open_window
-        win = open_window(ui.url)
-    else:
+
+    def show_hud():
+        nonlocal win
+        if win is None:
+            from .window import open_window
+            win = open_window(ui.url)
+        return win
+
+    tray = None
+    if args.tray:
+        from . import tray as tray_mod
+        if tray_mod.available():
+            tray = tray_mod.TrayPresence(bus, on_show=show_hud,
+                                         on_new_session=sessions.new_session,
+                                         on_quit=shutdown.set).start()
+            print(f"JARVIS is in the system tray. HUD on demand at {ui.url}")
+        else:
+            print("[tray needs: pip install pystray pillow - continuing without it]")
+
+    if not args.no_window and not args.tray:
+        show_hud()                      # normal mode: open the HUD now
+    elif args.no_window and not args.tray:
         print(f"HUD at {ui.url}")
 
     # kill-switch hotkey + voice
@@ -250,6 +270,8 @@ def main() -> None:
             voice.stop()
         if speaker:
             speaker.stop()
+        if tray:
+            tray.stop()
         ui.stop()
         if win:
             win.close()

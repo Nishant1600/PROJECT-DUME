@@ -5,6 +5,7 @@ import re
 from dataclasses import dataclass
 
 from .brain.session import SessionManager
+from .routines import DELETE_RE, LIST_RE, SAVE_RE, Routines
 
 
 @dataclass
@@ -48,4 +49,19 @@ def handle_local(text: str, sessions: SessionManager) -> Handled | None:
     if m := _REMEMBER.match(t):
         sessions.remember(m.group("fact"))
         return Handled("Noted. I'll remember that.")
+    # routines (#18): saving / forgetting / listing is local; triggering is handled upstream
+    routines = Routines()
+    if m := SAVE_RE.match(t):
+        name = routines.save(m.group("name"), m.group("prompt"))
+        if name:
+            return Handled(f"Saved the {name} routine. Say \"run {name}\" to use it.")
+        return Handled("I couldn't save that routine - give it a name and what it should do.")
+    if m := DELETE_RE.match(t):
+        ok = routines.delete(m.group("name"))
+        return Handled(f"Forgot the {m.group('name')} routine." if ok
+                       else f"I don't have a routine called {m.group('name')}.")
+    if LIST_RE.match(t):
+        names = routines.names()
+        return Handled("Your routines: " + ", ".join(names) + "." if names
+                       else "You haven't saved any routines yet.")
     return None
