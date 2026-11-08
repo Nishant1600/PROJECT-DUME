@@ -94,10 +94,10 @@ Connect Gmail, Notion, Google Calendar and GitHub once via `/mcp`, set `integrat
 
 | # | Feature | What it does |
 |:--:|:--|:--|
-| 39 | **Daily planner** | Morning plan from calendar + tasks + mail; evening recap of what moved. |
-| 40 | **Universal recall** | *"Remember this,"* *"what did I say about X last week?"* — searchable memory across voice, mail and notes. |
-| 42 | **"What's new" briefings** | *"Tell me something new in Three.js / my field"* — tracks topics I follow and surfaces what changed. |
-| 43 | **Full system control + auto-apply** | Drives any app by voice (mouse + keyboard): reads my Telegram internship bot and applies on my behalf, fills forms, operates the whole PC — **always confirming before it submits, sends, buys or deletes.** |
+| 39 | **Daily planner** ✅ | Plan my day and recap it from recent memory now; richer once calendar + mail are connected. |
+| 40 | **Universal recall** ✅ | *"What did I say about X?"* — searches all my memory + the conversation (`jarvis.recall`). |
+| 42 | **"What's new" briefings** ✅ | Tracks topics I follow (`memory/topics.md`) and uses web search to surface what changed. |
+| 43 | **Full system control + auto-apply** ✅ | Drives any app by voice (mouse + keyboard + screen reading): reads my Telegram internship bot and applies on my behalf, fills forms, operates the whole PC — **always confirming before it submits, sends, buys or deletes, and never typing secrets.** |
 
 ---
 

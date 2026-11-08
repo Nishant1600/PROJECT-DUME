@@ -22,6 +22,7 @@ IDENTITY_FILE = MEMORY_DIR / "identity.md"
 PROFILE_FILE = MEMORY_DIR / "profile.md"
 RULES_FILE = MEMORY_DIR / "rules.md"
 DESIGN_FILE = MEMORY_DIR / "design.md"
+TOPICS_FILE = MEMORY_DIR / "topics.md"
 
 # Context-budget guard (#24): hard caps so "always-loaded" memory never eats the plan.
 MAX_RULES_CHARS = 1400      # rulebook rides in the system prompt every turn — keep it tight
@@ -49,6 +50,19 @@ RULES_SEED = """<!--
 - Keep Claude usage low: prefer the cheapest approach that does the job.
 """
 
+TOPICS_SEED = """<!--
+  Topics you follow, for "tell me what's new" / "anything new in X?" (feature #42).
+  JARVIS reads this and uses web search to surface recent changes.
+  Add or remove lines freely, or just tell JARVIS "follow <topic>" / "stop following <topic>".
+-->
+
+# Topics I follow
+- Three.js and WebGL
+- React and Next.js
+- AI and Claude / LLM tooling
+- Web design and front-end trends
+"""
+
 
 def _read(p: Path) -> str:
     try:
@@ -69,6 +83,8 @@ class Profile:
         self.address_as = cfg.get("address_as") or "sir"
         self.ensure_identity()
         self.ensure_rules()
+        if not TOPICS_FILE.exists():
+            _write(TOPICS_FILE, TOPICS_SEED)
 
     # ------------------------------------------------------------- identity
     def ensure_identity(self) -> None:
