@@ -1,0 +1,52 @@
+# JARVIS configuration. Paths are relative to the DUME folder unless absolute.
+
+# How JARVIS addresses you in replies, e.g. "Nishant" or "boss". Empty = no name.
+address_as: ""
+
+claude:
+  command: claude            # the Claude Code CLI (uses your Claude subscription login)
+  model: null                # null = Claude Code default; or "sonnet", "opus", "haiku", "fable"
+  effort: null               # null = default; or low / medium / high / xhigh / max
+  summary_model: haiku       # cheap model used only to write the carry-over summary
+  # Built-in tools JARVIS may use. Fewer tools = smaller prompt = less usage.
+  tools: "Bash,PowerShell,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"
+  # Tools that run without asking. Everything else needs your yes (spoken or typed).
+  allowed_tools:
+    - Read
+    - Glob
+    - Grep
+    - WebSearch
+    - WebFetch
+    - mcp__jarvis-desktop__list_windows
+    - mcp__jarvis-desktop__active_window_text
+    - mcp__jarvis-desktop__ocr_screen
+    - mcp__jarvis-desktop__screenshot
+  # Set true to let desktop actions (click/type/open app...) run without asking.
+  auto_approve_desktop_actions: false
+  turn_timeout_seconds: 600
+  extra_args: []             # any extra CLI flags, e.g. ["--fallback-model", "sonnet"]
+
+session:
+  idle_minutes: 15           # new session after this long with no conversation
+  token_cap: 60000           # ...or once the conversation context grows past this many tokens
+  summary_words: 150         # size of the summary carried into the new session
+
+# Where JARVIS works by default, and named projects for "switch project to <name>".
+project_dir: workspace
+projects: {}
+  # dume: "C:/Users/hp/Desktop/Nishant Sharma B.TECH/Project/DUME"
+
+voice:
+  tts_voice: en-GB-RyanNeural
+  tts_rate: "+0%"
+  whisper_model: large-v3-turbo  # tiny / base / small / medium / large-v3-turbo (best accuracy on your GPU)
+  whisper_device: cuda
+  whisper_compute_type: float16
+  language: en                # null = auto-detect; "en" avoids it hearing other languages
+  wake_model: hey_jarvis
+  wake_threshold: 0.5
+  push_to_talk_hotkey: ctrl+alt+space
+
+desktop:
+  enabled: true
+  kill_switch_hotkey: ctrl+alt+j

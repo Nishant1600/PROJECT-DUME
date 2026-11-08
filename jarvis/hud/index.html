@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>JARVIS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600&family=Space+Grotesk:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="hud.css" />
+</head>
+<body data-state="boot">
+  <canvas id="scene"></canvas>
+  <div id="grain"></div>
+  <div id="vignette"></div>
+
+  <div class="frame">
+    <!-- top bar -->
+    <header class="bar">
+      <div class="brand">
+        <span class="mark">J.A.R.V.I.S</span>
+        <span class="sub">personal&nbsp;assistant</span>
+      </div>
+      <div class="statewrap">
+        <span class="dot"></span><span id="stateLabel">booting</span>
+      </div>
+      <div class="clock" id="clock">--:--</div>
+    </header>
+
+    <!-- left: live activity -->
+    <section class="panel left" id="activityPanel">
+      <div class="panel-h"><span>activity</span><i></i></div>
+      <ul class="ticker" id="ticker"></ul>
+    </section>
+
+    <!-- centre: the core lives on the canvas; this just holds the caption -->
+    <section class="stage">
+      <div class="corelabel" id="coreLabel">STANDBY</div>
+      <div class="partial" id="partial"></div>
+    </section>
+
+    <!-- right: conversation + meters -->
+    <section class="panel right">
+      <div class="panel-h"><span>conversation</span><i></i></div>
+      <div class="log" id="log"></div>
+      <div class="meters">
+        <div class="meter">
+          <label>context <b id="ctxVal">0</b></label>
+          <div class="track"><span id="ctxBar"></span></div>
+        </div>
+        <div class="stat"><label>turns</label><b id="turns">0</b></div>
+        <div class="stat"><label>project</label><b id="project">—</b></div>
+      </div>
+    </section>
+
+    <!-- bottom: input + controls -->
+    <footer class="dock">
+      <form id="inputForm" autocomplete="off">
+        <input id="textInput" type="text" placeholder="type a command, or say “Hey Jarvis”…" />
+      </form>
+      <div class="controls">
+        <button class="ctl" data-action="stop" title="Stop (kill switch)">◼ stop</button>
+        <button class="ctl" data-action="new_session" title="Start a fresh session">⟳ new</button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- confirmation -->
+  <div class="confirm-layer" id="confirmLayer" hidden>
+    <div class="confirm-card">
+      <div class="confirm-h">confirmation required</div>
+      <p class="confirm-ask" id="confirmAsk"></p>
+      <code class="confirm-detail" id="confirmDetail"></code>
+      <div class="confirm-actions">
+        <button id="denyBtn" class="deny">Deny</button>
+        <button id="allowBtn" class="allow">Allow</button>
+      </div>
+      <div class="confirm-timer"><span id="confirmTimer"></span></div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="core.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

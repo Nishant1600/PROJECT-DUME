@@ -1,0 +1,28 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# JARVIS runtime / generated (machine-specific paths, tokens, personal data)
+jarvis-mcp.json
+jarvis-settings.json
+runtime/
+logs/
+memory/*.md
+!memory/.gitkeep
+workspace/*
+!workspace/.gitkeep
+
+# Models / caches downloaded at first run
+*.onnx
+models/
+.cache/
+
+# OS / editor
+Thumbs.db
+desktop.ini
+.DS_Store
+.idea/
+.vscode/

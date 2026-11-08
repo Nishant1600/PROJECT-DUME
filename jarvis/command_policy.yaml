@@ -1,0 +1,67 @@
+# JARVIS command policy.
+#
+# JARVIS has full terminal access EXCEPT:
+#   block   - never runs, even if you say yes. Claude is told why.
+#   confirm - runs only after you approve it (voice "yes", or ALLOW in the HUD).
+# Everything else runs without asking.
+#
+# Patterns are case-insensitive regular expressions matched against the command after
+# quotes and ^ / ` escapes are removed. The recursive-delete checks are built into
+# jarvis/policy.py and always apply. JARVIS is not allowed to edit this file.
+
+block:
+  - name: Recursive forced delete (rm -rf, Remove-Item -Recurse -Force, rd /s /q, del /s /q)
+    builtin: recursive_delete
+    reason: Deletes whole folder trees with no undo. Never allowed for any model.
+
+  - name: Delete a drive root, Windows, Program Files or your user folder
+    builtin: delete_system_path
+    reason: Would destroy the system or all your files.
+
+  - name: Recursive delete from code (.NET, Node)
+    pattern: 'io\.directory\]::delete\(.*\$true|rmsync\(.*recursive\s*:\s*true|\brimraf\b'
+    reason: Same as rm -rf, written another way.
+
+  - name: Format or wipe a disk
+    pattern: '\bformat(\.com)?\s+[a-z]:|\bformat-volume\b|\bclear-disk\b|\bdiskpart\b|\bmkfs\b'
+    reason: Erases a whole drive.
+
+  - name: Change JARVIS's own safety rules
+    builtin: self_protection
+    reason: The command policy and guard can only be changed by you, by hand.
+
+confirm:
+  - name: Delete files or folders
+    builtin: any_delete
+    reason: Deleting is permanent.
+
+  - name: Delete from code (Python, Node)
+    pattern: '\bshutil\.rmtree\b|\bos\.(remove|unlink|rmdir)\b|\.unlink\(|\bfs\.(rm|unlink)(sync)?\('
+    reason: Deleting is permanent.
+
+  - name: Shut down, restart or log off
+    pattern: '\bshutdown(\.exe)?\b|\bstop-computer\b|\brestart-computer\b|\blogoff\b'
+    reason: Closes everything you have open.
+
+  - name: Kill processes
+    pattern: '\btaskkill\b|\bstop-process\b|\bkill\s+-9\b|\bpkill\b'
+    reason: Unsaved work in that program is lost.
+
+  - name: Install or uninstall software
+    pattern: '\bwinget\s+(install|uninstall)\b|\bchoco\s+(install|uninstall)\b|\bmsiexec\b|\bpip\s+uninstall\b|\bnpm\s+(un)?install\s+(-g|--global)\b|\buninstall-package\b'
+    reason: Changes what is installed on the PC.
+
+  - name: Change system settings (registry, services, scheduled tasks, environment)
+    pattern: '\breg\s+(add|delete|import)\b|\b(set|new|remove)-itemproperty\s+.*hk(lm|cu|cr)|\bsc(\.exe)?\s+(config|stop|delete|create)\b|\b(stop|set)-service\b|\bschtasks\s+/(create|delete|change)\b|\bregister-scheduledtask\b|\bsetx\b'
+    reason: System-wide changes are hard to undo.
+
+  - name: Git history rewrite or discard work
+    pattern: '\bgit\s+push\s+.*(--force|-f\b)|\bgit\s+reset\s+--hard\b|\bgit\s+clean\s+-\w*f|\bgit\s+branch\s+-D\b|\bgit\s+checkout\s+--\s+\.|\bgit\s+restore\s+\.'
+    reason: Can throw away commits or uncommitted changes.
+
+# Files JARVIS may never write to or delete (Write/Edit tools and shell commands).
+protected_paths:
+  - 'C:/Windows'
+  - 'C:/Program Files'
+  - 'C:/Program Files (x86)'
+  - '~/.ssh'

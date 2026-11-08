@@ -1,0 +1,24 @@
+# Core / brain
+pyyaml
+mcp>=2.3
+
+# Voice (wake word, speech-to-text, text-to-speech)
+openwakeword
+onnxruntime
+faster-whisper
+sounddevice
+numpy
+edge-tts
+miniaudio
+keyboard
+# CUDA libraries so Whisper runs on the NVIDIA GPU (falls back to CPU without them)
+nvidia-cublas-cu12
+nvidia-cudnn-cu12
+
+# Desktop control MCP server
+pyautogui
+mss
+pillow
+uiautomation
+rapidocr-onnxruntime
+pyperclip
