@@ -83,12 +83,12 @@ Connect Gmail, Notion, Google Calendar and GitHub once via `/mcp`, set `integrat
 
 | # | Feature | What it does |
 |:--:|:--|:--|
-| 34 | **Scaffolder from my template** | New site spun up in my preferred stack/boilerplate automatically. |
-| 35 | **Live preview + self-review** | Runs the dev server, opens it, screenshots, critiques against my design rules. |
-| 36 | **Design-to-code** | Describe or sketch → built to my patterns → iterates on *"make the hero bigger."* |
-| 37 | **PR & repo buddy** | Reviews diffs, flags issues, watches CI, drafts PR descriptions. |
-| 38 | **Deploy helper** | Guided deploy to Vercel / Netlify / etc. with confirmation gates. |
-| 41 | **SEO built in** | On-page SEO, meta / OpenGraph, JSON-LD schema and a Lighthouse pass whenever I build or review a site. |
+| 34 | **Scaffolder from my template** ✅ | New site spun up in my preferred stack/boilerplate (`jarvis.webdev scaffold`). |
+| 35 | **Live preview + self-review** ✅ | Finds the dev command + URL (`jarvis.webdev preview-info`), opens it, screenshots, critiques against my rules. |
+| 36 | **Design-to-code** ✅ | Describe or sketch → built to my learned patterns → iterates on *"make the hero bigger."* |
+| 37 | **PR & repo buddy** ✅ | Reviews diffs, lists open PRs with CI + review state, drafts PR descriptions — via `gh`, no connector needed (`jarvis.repo`). |
+| 38 | **Deploy helper** ✅ | Detects the host (Vercel / Netlify / Pages / static) and the build + deploy command (`jarvis.repo deploy-info`); always confirms before shipping. |
+| 41 | **SEO built in** ✅ | Dependency-free on-page SEO audit — title, meta, OG, headings, alt, canonical, JSON-LD, viewport (`jarvis.webdev seo`). |
 
 **Day-to-day / other**
 
