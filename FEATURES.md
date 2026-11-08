@@ -76,8 +76,8 @@ Connect Gmail, Notion, Google Calendar and GitHub once via `/mcp`, set `integrat
 | 29 | **Study tutor** | *"Explain this topic"* → saves notes to Notion, builds a personal knowledge base. |
 | 30 | **Deadline tracker** | Pulls due dates from mail / calendar / Notion and warns me ahead. |
 | 31 | **Revision mode** | Quizzes me from my own notes, spaced repetition. |
-| 32 | **Research & citations** | Reads papers and pages, summarizes, keeps the references. |
-| 33 | **Lecture capture** | Transcribes a recording or live audio → summary + action items. |
+| 32 | **Research & citations** ✅ | Web search/fetch, answers with sources, and saves them (`jarvis.research` → `memory/references.md`). |
+| 33 | **Lecture capture** ✅ | Transcribes a recording to a timestamped transcript with the whisper model already loaded (`jarvis.lecture`) → summary + action items. |
 
 **Website / development**
 

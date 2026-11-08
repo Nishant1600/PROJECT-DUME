@@ -27,6 +27,7 @@ SOURCES: list[tuple[Path, str]] = [
     (MEMORY_DIR / "rules.md", "your rules"),
     (MEMORY_DIR / "identity.md", "identity"),
     (MEMORY_DIR / "topics.md", "topics you follow"),
+    (MEMORY_DIR / "references.md", "a source I read for you"),
 ]
 
 _STOP = {"the", "a", "an", "of", "to", "in", "on", "for", "and", "or", "is", "are",
