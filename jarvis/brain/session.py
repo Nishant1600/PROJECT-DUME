@@ -211,6 +211,13 @@ class SessionManager:
                 self.state["context_tokens"] = res.context_tokens
             self.state["last_activity"] = time.time()
             self.state["turns"] += 1
+            # usage radar: record this turn (best-effort, local, never fails the turn)
+            if not res.cancelled:
+                try:
+                    from ..usage import log as _log_usage
+                    _log_usage(res.context_tokens, res.cost_usd, self.state["session_id"])
+                except Exception:
+                    pass
 
             for fact in REMEMBER_RE.findall(res.text or ""):
                 self.remember(fact)

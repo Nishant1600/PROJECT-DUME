@@ -157,6 +157,53 @@ class Assistant:
                 self.request_shutdown()
             return
 
+        # "make it yours": change JARVIS's voice / speaking pace / wake word (local, instant)
+        from .voices import parse_command as _voice_cmd
+        vc = _voice_cmd(text)
+        if vc:
+            reply = self._apply_voice_change(*vc)
+            self.bus.say_line("jarvis", reply)
+            self.speak(reply)
+            self._emit_session()
+            self.bus.set_state("idle")
+            return
+
+        # trivia answered locally (time, date, greeting, simple maths, "who are you") — no Claude
+        # call, so it never costs usage and works offline
+        from .offline_brain import basics_answer
+        trivia = basics_answer(text, self.cfg)
+        if trivia:
+            self.bus.say_line("jarvis", trivia)
+            self.speak(trivia)
+            self._emit_session()
+            self.bus.set_state("idle")
+            return
+
+        # morning brief / status: a trigger phrase expands into the full instruction for the brain
+        from .brief import brief_prompt, is_brief_trigger, is_status_trigger, status_prompt
+        if is_brief_trigger(text):
+            self.bus.publish(B.NOTICE, text="Putting your brief together.", level="info")
+            text = brief_prompt(self.cfg)
+        elif is_status_trigger(text):
+            self.bus.publish(B.NOTICE, text="Checking your mail.", level="info")
+            text = status_prompt(self.cfg)
+        else:
+            from .diffreview import is_trigger as is_diff_trigger, prompt as diff_prompt
+            from .clipboard import build_prompt, get_text, is_trigger
+            if is_diff_trigger(text):
+                self.bus.publish(B.NOTICE, text="Reading your changes.", level="info")
+                text = diff_prompt(str(self.sessions.cwd))
+            elif is_trigger(text):
+                # clipboard genie: "explain / translate / tidy what I just copied"
+                clip = get_text()
+                if not clip:
+                    self.bus.say_line("jarvis", "There's nothing text-like on your clipboard.")
+                    self.speak("There's nothing I can read on your clipboard.")
+                    self.bus.set_state("idle")
+                    return
+                self.bus.publish(B.NOTICE, text="Working on what you copied.", level="info")
+                text = build_prompt(text, clip)
+
         # #18: a saved routine's trigger phrase expands into its instruction for the brain
         routine = self.routines.match(text)
         if routine:
@@ -198,16 +245,53 @@ class Assistant:
             for s in splitter.feed(tail) + splitter.flush():
                 self.speak(s)
         final_text = "".join(full).strip()
-        self.bus.say_line("jarvis", final_text, final=True)
         if res.is_error and not res.cancelled:
-            self.bus.publish(B.NOTICE, text=f"Error: {res.error}", level="error")
-            self.speak("Sorry, something went wrong with that request.")
+            from .offline_brain import answer as offline_answer, is_offline_error
+            if is_offline_error(res.error) and not final_text:
+                # network is down and the cloud brain never replied — field it locally
+                reply = offline_answer(text, self.cfg)
+                self.bus.say_line("jarvis", reply, final=True)
+                self.speak(reply)
+                self.bus.publish(B.NOTICE, text="Offline — answered locally.", level="warn")
+            else:
+                self.bus.say_line("jarvis", final_text, final=True)
+                self.bus.publish(B.NOTICE, text=f"Error: {res.error}", level="error")
+                self.speak("Sorry, something went wrong with that request.")
+        else:
+            self.bus.say_line("jarvis", final_text, final=True)
         self._emit_session()
 
         if self.speaker:
             while self.speaker.speaking and not self.interrupted.is_set():
                 time.sleep(0.05)
         self.bus.set_state("idle")
+
+    def _apply_voice_change(self, kind: str, val: str) -> str:
+        """Apply a voice/pace/wake-word change to config and (where possible) the live speaker."""
+        from .voices import BUILTIN_WAKE, bump_rate, set_rate, set_voice, set_wake
+        if kind == "voice":
+            ok = set_voice(val)
+            if ok and self.speaker:
+                self.speaker.voice = val
+            self.cfg.setdefault("voice", {})["tts_voice"] = val
+            return "How's this voice, sir?" if ok else "I couldn't change my voice just now."
+        if kind == "rate":
+            new = bump_rate(val)
+            if new and set_rate(new):
+                if self.speaker:
+                    self.speaker.rate = new
+                self.cfg.setdefault("voice", {})["tts_rate"] = new
+                return "Is this pace better?"
+            return "I couldn't change my speaking pace."
+        if kind == "wake":
+            if val not in BUILTIN_WAKE and not val.endswith(".onnx"):
+                opts = ", ".join(w.replace("_", " ") for w in BUILTIN_WAKE[:4])
+                return (f"I can switch to a built-in wake word such as {opts}. A brand-new word like "
+                        f"'{val.replace('_', ' ')}' needs a trained model — point wake_model at its .onnx file.")
+            ok = set_wake(val)
+            return (f"Wake word set to {val.replace('_', ' ')}. Restart me and I'll listen for it."
+                    if ok else "I couldn't change the wake word.")
+        return "I'm not sure how to change that."
 
     # ----------------------------------------------------------------- control
     def kill_switch(self) -> None:

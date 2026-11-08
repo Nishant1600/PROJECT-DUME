@@ -124,6 +124,21 @@ def run_text(assistant: Assistant, confirm: ConfirmServer) -> None:
             if local.quit:
                 break
             continue
+        from .brief import brief_prompt, is_brief_trigger, is_status_trigger, status_prompt
+        if is_brief_trigger(line):
+            line = brief_prompt(assistant.cfg)
+        elif is_status_trigger(line):
+            line = status_prompt(assistant.cfg)
+        else:
+            from .clipboard import build_prompt, get_text, is_trigger
+            from .diffreview import is_trigger as is_diff_trigger, prompt as diff_prompt
+            if is_diff_trigger(line):
+                line = diff_prompt(str(assistant.sessions.cwd))
+            elif is_trigger(line):
+                clip = get_text()
+                if not clip:
+                    print("jarvis> There's nothing text-like on your clipboard."); continue
+                line = build_prompt(line, clip)
         STOP_FILE.unlink(missing_ok=True)
         stripper = TagStripper()
         print("jarvis> ", end="", flush=True)
@@ -247,12 +262,10 @@ def main() -> None:
     # optional startup brief (needs your connectors authorized)
     integ = cfg.get("integrations", {})
     if integ.get("startup_brief") and integ.get("use_my_connectors"):
+        from .brief import brief_prompt
         def brief():
             time.sleep(2)
-            assistant.handle_input(
-                "Give me a brief: any important unread email, what's on my calendar today, and "
-                "Notion tasks due. Keep it to two or three spoken sentences. If a tool isn't "
-                "available, skip that part quietly.", source="startup")
+            assistant.handle_input(brief_prompt(cfg), source="startup")
         threading.Thread(target=brief, daemon=True).start()
 
     # proactive nudges + reminders (#16): idle-only, rate-limited; nudges opt-in via config

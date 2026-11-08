@@ -7,11 +7,17 @@ from dataclasses import dataclass
 import datetime
 
 from .brain.session import SessionManager
+from .deadlines import Deadlines, parse_due
 from .nudges import Reminders, parse_when
 from .routines import DELETE_RE, LIST_RE, SAVE_RE, Routines
 
 _REMIND = re.compile(r"^(?:/remind\s+|remind me(?:\s+to)?\s+)(?P<body>.+)$", re.I)
 _REMINDERS_LIST = re.compile(r"^(?:list|show|what are)\s+(?:my\s+)?reminders\W*$", re.I)
+_DEADLINE_ADD = re.compile(r"^(?:/deadline\s+|(?:add|track|set)(?:\s+a)?\s+deadline\b[:,]?\s*)(?P<body>.+)$", re.I)
+_DEADLINE_DUE = re.compile(r"^(?:what(?:'s| is)?\s+due|what\s+(?:are\s+)?my\s+deadlines|anything\s+due|deadlines)\b.*$", re.I)
+_DEADLINE_DROP = re.compile(r"^(?:/undeadline\s+|(?:remove|delete|drop|clear)\s+(?:the\s+)?deadline\b[:,]?\s*)(?P<ident>.+)$", re.I)
+_FOCUS_ON = re.compile(r"^(?:/focus|focus(?:\s+mode)?(?:\s+on)?|do not disturb|dnd|quiet mode|hush|heads down)\W*$", re.I)
+_FOCUS_OFF = re.compile(r"^(?:/unfocus|focus\s+off|unfocus|stop\s+focus|exit\s+focus|end\s+focus|i'?m\s+back|resume\s+nudges|normal\s+mode)\W*$", re.I)
 
 
 @dataclass
@@ -22,7 +28,7 @@ class Handled:
 
 _NEW = re.compile(r"^(?:/new|(?:start )?(?:a )?(?:new|fresh) (?:session|conversation|chat)|fresh start)\W*$", re.I)
 _PROJECT = re.compile(r"^(?:/project\s+|(?:switch|change) (?:to )?(?:the )?project (?:to )?)(?P<name>.+?)\W*$", re.I)
-_STATUS = re.compile(r"^(?:/status|(?:session )?status)\W*$", re.I)
+_STATUS = re.compile(r"^(?:/status|session status|session info)\W*$", re.I)
 _QUIT = re.compile(r"^(?:/quit|/exit|exit|quit|goodbye(?: jarvis)?|shut ?down jarvis)\W*$", re.I)
 _REMEMBER = re.compile(r"^(?:/remember\s+|remember (?:that\s+)?)(?P<fact>.+)$", re.I)
 _HELP = re.compile(r"^(?:/help|help)\W*$", re.I)
@@ -52,6 +58,10 @@ def handle_local(text: str, sessions: SessionManager) -> Handled | None:
             return Handled(f"No active session. Working folder: {s['project_dir']}.")
         return Handled(f"Session has {s['turns']} turns and about {s['context_tokens']:,} of "
                        f"{s['token_cap']:,} context tokens. Working folder: {s['project_dir']}.")
+    # usage radar: trend today + how close this session is to rotating (local, no Claude call)
+    from .usage import is_trigger as _usage_trigger, spoken as _usage_spoken
+    if _usage_trigger(t):
+        return Handled(_usage_spoken(sessions.status(), sessions.cfg))
     if m := _REMEMBER.match(t):
         sessions.remember(m.group("fact"))
         return Handled("Noted. I'll remember that.")
@@ -88,4 +98,33 @@ def handle_local(text: str, sessions: SessionManager) -> Handled | None:
         parts = [f"{r['text']} at {datetime.datetime.fromtimestamp(r['ts']).strftime('%I:%M %p').lstrip('0')}"
                  for r in items]
         return Handled("Reminders: " + "; ".join(parts) + ".")
+    # deadline tracker: adding/removing/listing is local and instant (no model call)
+    if m := _DEADLINE_DROP.match(t):
+        ident = m.group("ident").strip(" .")
+        return Handled("Removed that deadline." if Deadlines().remove(ident)
+                       else f"I'm not tracking a deadline matching {ident}.")
+    if m := _DEADLINE_ADD.match(t):
+        parsed = parse_due(m.group("body"))
+        if not parsed:
+            return Handled("When is it due? Try \"submit the report by Friday\" or \"...by 25 Nov\".")
+        title, due = parsed
+        if not title:
+            return Handled("What's the deadline for? Tell me what's due and when.")
+        Deadlines().add(title, due)
+        return Handled(f"Tracking that — {title}, due {due.strftime('%A %d %B')}.")
+    if _DEADLINE_DUE.match(t):
+        items = Deadlines().due(within_days=14)
+        if not items:
+            return Handled("Nothing due in the next two weeks.")
+        parts = [f"{it['title']} ({it['when']})" for it in items[:6]]
+        return Handled("Coming up: " + "; ".join(parts) + ".")
+    # focus mode: hush unsolicited nudges while you work (reminders are held, not lost)
+    if _FOCUS_OFF.match(t):
+        from . import focus
+        focus.off()
+        return Handled("Focus mode off. Anything I was holding will come through now.")
+    if _FOCUS_ON.match(t):
+        from . import focus
+        focus.on()
+        return Handled("Focus mode on. I'll stay quiet until you say you're back.")
     return None

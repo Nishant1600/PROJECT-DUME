@@ -24,13 +24,13 @@ These make JARVIS *yours*, not a generic bot.
 | 6 | **Safe hands on the PC** | Full terminal + desktop control, but `rm -rf` and other destructive commands are hard-blocked, and risky ones ask first. |
 | 7 | **Light on your Claude plan** | Auto-rotates sessions, loads only its own tools, reads the screen text-first. |
 
-## 🔌 Day-to-day assistant (flip on once you connect the tool)
+## 🔌 Day-to-day assistant (connectors — now live)
 
-Connect Gmail, Notion, Google Calendar and GitHub once via `/mcp`, set `integrations.use_my_connectors: true`, and these come alive.
+Gmail, Notion, Google Calendar and Drive are connected and `integrations.use_my_connectors: true`, so these are live. GitHub works through the `gh` CLI (no connector needed).
 
 | # | Feature | What it does |
 |:--:|:--|:--|
-| 8 | **Morning brief** | On startup (or on *“brief me”*): important unread mail, today's calendar, Notion tasks due — in two or three spoken sentences. (`integrations.startup_brief`) |
+| 8 | **Morning brief** ✅ | On startup (or on *“brief me” / “good morning”*): important unread mail, today's calendar, Notion tasks and tracked deadlines — in two or three spoken sentences (`jarvis.brief`, `integrations.startup_brief`). |
 | 9 | **Inbox triage** | *“Check my mail.”* Summarizes what's new, flags what matters, and drafts replies for your okay — never sends without confirmation. |
 | 10 | **Notion workspace** | *“What's on my plate?”* Reads your tasks, notes and project pages; adds or updates items on request. |
 | 11 | **Calendar & reminders** | *“What's my day look like?”* Reads your schedule, warns of clashes, and sets reminders and events (with confirmation). |
@@ -64,17 +64,17 @@ Connect Gmail, Notion, Google Calendar and GitHub once via `/mcp`, set `integrat
 
 | # | Feature | What it does |
 |:--:|:--|:--|
-| 25 | **"Status" briefing** | One word → important unread, grouped by company/sender, a line each; then *"read the one from X."* |
-| 26 | **Multi-account inbox** | Several Gmail accounts at once; *"reply from my college account."* |
-| 27 | **Sender/company intel** | Names who mailed me and why — recruiter, invoice, newsletter. |
-| 28 | **Replies in my voice** | Drafts matched to how I write, shown before send. |
+| 25 | **"Status" briefing** ✅ | One word → important unread, grouped by company/sender, a line each; then *"read the one from X."* (`jarvis.brief` status) |
+| 26 | **Multi-account inbox** ✅ | Declare your accounts in config; *"reply from my college account"* resolves to the right address (`jarvis.accounts`). |
+| 27 | **Sender/company intel** ✅ | Names who mailed me and why — recruiter, invoice, newsletter — grouped in the status briefing. |
+| 28 | **Replies in my voice** ✅ | Learns how I write from my sent mail and drafts to match, shown before send (`jarvis.mailstyle`). |
 
 **Studies**
 
 | # | Feature | What it does |
 |:--:|:--|:--|
 | 29 | **Study tutor** | *"Explain this topic"* → saves notes to Notion, builds a personal knowledge base. |
-| 30 | **Deadline tracker** | Pulls due dates from mail / calendar / Notion and warns me ahead. |
+| 30 | **Deadline tracker** ✅ | Track due dates by voice or let JARVIS register ones it finds in mail/calendar/Notion; warns me ahead, with heads-up nudges (`jarvis.deadlines`). |
 | 31 | **Revision mode** | Quizzes me from my own notes, spaced repetition. |
 | 32 | **Research & citations** ✅ | Web search/fetch, answers with sources, and saves them (`jarvis.research` → `memory/references.md`). |
 | 33 | **Lecture capture** ✅ | Transcribes a recording to a timestamped transcript with the whisper model already loaded (`jarvis.lecture`) → summary + action items. |
@@ -99,23 +99,36 @@ Connect Gmail, Notion, Google Calendar and GitHub once via `/mcp`, set `integrat
 | 42 | **"What's new" briefings** ✅ | Tracks topics I follow (`memory/topics.md`) and uses web search to surface what changed. |
 | 43 | **Full system control by voice** ✅ | Drives any app with mouse, keyboard and screen reading — opens apps, fills forms, operates the whole PC hands-free — **always confirming before it submits, sends, buys or deletes, and never typing secrets.** |
 
-## 💡 Exploring (achievable, not yet scheduled)
+## ✅ Phase 2 — "On the horizon", now shipping (44–50)
 
-Ideas on the table — small, local, and within reach of the current design.
+The ideas that were on the horizon are built:
+
+| # | Feature | What it does |
+|:--:|:--|:--|
+| 44 | **Clipboard genie** ✅ | *"Explain / translate / tidy what I just copied"* — reads the clipboard, does it, puts rewrites back ready to paste (`jarvis.clipboard`). |
+| 45 | **Focus mode** ✅ | *"Focus"* hushes every proactive nudge; *"I'm back"* resumes. Reminders are held, not lost (`jarvis.focus`). |
+| 46 | **Offline document brain** ✅ | Point it at a folder; it answers from my notes and PDFs with a pure-Python BM25 index — no network (`jarvis.docbrain`). |
+| 47 | **Spoken diff review** ✅ | *"Walk me through my changes"* — a plain-spoken, file-by-file tour of my diff before I commit (`jarvis.diffreview`). |
+| 48 | **Make it yours** ✅ | Pick my voice and pace (*"use an Indian English voice"*, *"speak faster"*) and set the wake word — all by voice (`jarvis.voices`). |
+| 49 | **Zero-cloud fallback** ✅ | Trivia answered locally with no Claude call; if the network drops, a local Ollama model (or built-ins) still replies (`jarvis.offline_brain`). |
+| 50 | **Usage radar** ✅ | *"Usage"* → how today compares to my recent average and how close this session is to rotating (`jarvis.usage`). |
+
+## 💡 Exploring (achievable, not yet built)
+
+Fresh ideas on the table — small, local, and within reach of the current design.
 
 | Idea | What it would do |
 |:--|:--|
-| **Clipboard genie** | *"Explain / translate / tidy what I just copied."* |
-| **Focus mode** | One word hushes every nudge while you're deep in work. |
-| **Your own document brain** | Point JARVIS at a folder; it answers from your notes and PDFs, fully offline. |
-| **Spoken diff review** | *"Walk me through my changes"* before you commit. |
-| **Make it yours** | Choose your own wake word and voice. |
-| **Zero-cloud fallback** | A small on-device model fields the basics when offline or saving usage. |
-| **Usage radar** | How your Claude usage is trending, and when a session will rotate. |
+| **Scheduled routines** | *"Every weekday at nine, brief me"* — named routines on a timer. |
+| **Train your own wake word** | A guided flow to teach JARVIS a brand-new trigger phrase. |
+| **Offline screen sense** | A small local vision model reads the screen when you're off the grid. |
+| **Live meeting notetaker** | Transcribe and summarise a call *as it happens*, not just afterwards. |
+| **Reach your phone** | Push a nudge, a brief or a finished job to your phone. |
+| **Secure form-fill vault** | An opt-in, encrypted store of profile details (never passwords) to speed up forms. |
 
 ---
 
 <div align="center">
-<sub>Most of this is already shipping; the connector features need only a one-time <code>/mcp</code> sign-in.</sub>
-<br/><sub>Early priorities: <b>Email · Notion · Calendar · Code brain-bursting</b>.</sub>
+<sub>Everything above is shipping; Gmail, Notion, Calendar and Drive are connected.</sub>
+<br/><sub>Next up: <b>scheduled routines · your own wake word · offline screen sense</b>.</sub>
 </div>

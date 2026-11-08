@@ -18,6 +18,12 @@ DEFAULTS: dict[str, Any] = {
     "name": "",
     "address_as": "",
     "integrations": {"use_my_connectors": False, "startup_brief": False},
+    # Mail accounts you want JARVIS aware of (so "reply from my college account" resolves).
+    "mail": {"accounts": [], "learn_voice": True},
+    # Offline document brain: folders of notes/PDFs JARVIS can answer from, no network.
+    "docbrain": {"folders": []},
+    # Zero-cloud fallback: a local Ollama model (if running) fields basics when offline.
+    "offline": {"enabled": True, "model": None},
     "learning": {"enabled": True},
     "autostart": {"enabled": False},
     # Proactive nudges (#16): reminders you set always fire; unsolicited nudges need enabled=true.

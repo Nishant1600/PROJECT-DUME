@@ -122,6 +122,7 @@ class NudgeEngine:
         self._stop = threading.Event()
         self._last_nudge = 0.0
         self._last_commit_nudge = 0.0
+        self._deadline_warned: dict[str, str] = {}   # deadline id -> date already warned (once/day)
 
     # -- gating helpers (pure, so they're easy to test)
     def _in_quiet_hours(self, now: datetime.datetime) -> bool:
@@ -150,6 +151,24 @@ class NudgeEngine:
             return f"You have {s['dirty_count']} uncommitted changes on {name}. Shall I commit them?"
         return None
 
+    def _maybe_deadline_nudge(self, now: datetime.datetime) -> str | None:
+        """Warn once a day about a deadline that is overdue, due today, or due tomorrow."""
+        if not self.cfg.get("enabled"):
+            return None
+        try:
+            from .deadlines import Deadlines
+            items = Deadlines().due(within_days=1)   # overdue, today, tomorrow
+        except Exception:
+            return None
+        today = now.date().isoformat()
+        who = (self.address_as or "sir").capitalize()
+        for it in items:
+            if self._deadline_warned.get(it["id"]) == today:
+                continue
+            self._deadline_warned[it["id"]] = today
+            return f"{who}, a heads-up: {it['title']} is {it['when']}."
+        return None
+
     # -- the loop
     def start(self) -> "NudgeEngine":
         threading.Thread(target=self._loop, name="jarvis-nudges", daemon=True).start()
@@ -169,6 +188,9 @@ class NudgeEngine:
         min_gap = int(self.cfg.get("min_gap_minutes", 20)) * 60
         while not self._stop.wait(30):
             try:
+                from . import focus
+                if focus.active():
+                    continue          # focus mode: hold everything (reminders included) until it lifts
                 if not self.is_idle():
                     continue
                 now = datetime.datetime.now()
@@ -180,7 +202,7 @@ class NudgeEngine:
                 # unsolicited nudges: opt-in, spaced out, and only in waking hours
                 if now_ts - self._last_nudge < min_gap or self._in_quiet_hours(now):
                     continue
-                msg = self._maybe_commit_nudge(now_ts)
+                msg = self._maybe_deadline_nudge(now) or self._maybe_commit_nudge(now_ts)
                 if msg:
                     self._speak(msg)
             except Exception:

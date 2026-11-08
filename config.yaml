@@ -60,6 +60,21 @@ integrations:
   # Optional greeting brief when JARVIS starts: a quick look at mail / calendar / Notion.
   startup_brief: false
 
+# Mail accounts JARVIS should know about, so "reply from my college account" resolves to the
+# right address. Your Gmail connector signs in to one account at a time; connect another via
+# /mcp to actually reach it. Leave empty to just use the connected account.
+mail:
+  accounts: []
+    # - {label: personal, address: you@gmail.com,   purpose: default / personal}
+    # - {label: college,  address: you@college.edu, purpose: university mail}
+  learn_voice: true   # let JARVIS learn your writing style (from your sent mail) for drafts
+
+# Offline document brain: folders of your notes / PDFs JARVIS can answer from, fully offline
+# (no network). Ask "what do my notes say about X". Add folders here or just name one by voice.
+docbrain:
+  folders: []
+    # - "C:/Users/hp/Documents/Notes"
+
 # Learns how you work and saves it to memory/profile.md, injected into every session.
 learning:
   enabled: true

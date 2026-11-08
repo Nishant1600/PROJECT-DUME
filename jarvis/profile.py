@@ -85,6 +85,8 @@ class Profile:
         self.ensure_rules()
         if not TOPICS_FILE.exists():
             _write(TOPICS_FILE, TOPICS_SEED)
+        from .mailstyle import ensure as _ensure_mailstyle
+        _ensure_mailstyle()
 
     # ------------------------------------------------------------- identity
     def ensure_identity(self) -> None:
@@ -211,6 +213,14 @@ class Profile:
         design = self.design_text()
         if design:
             parts.append("# How I build websites (learned)\n" + design)
+        from .accounts import context_summary
+        accts = context_summary(self.cfg)
+        if accts:
+            parts.append(accts)
+        from .mailstyle import style_text as _mail_style
+        voice = _mail_style()
+        if voice:
+            parts.append("# How I write email (match this when drafting)\n" + voice)
         if extra:
             parts.append(extra)
         if not parts:

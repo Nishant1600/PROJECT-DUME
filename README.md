@@ -51,30 +51,26 @@
 
 ## ✦ Roadmap &amp; progress
 
-JARVIS grows in layers — and **everything that doesn't need an external sign-in is already shipping.** The vision keeps widening from there.
+JARVIS grows in layers — and **everything below is already shipping.** Gmail, Notion, Google Calendar and Drive are all connected; the vision keeps widening from there.
 
 **✅ Working today**
 - **Knows &amp; learns you** — identity, an editable rulebook, and a mind that learns your corrections *and* your coding &amp; design style over time — all on a tight token budget
 - **Always there** — starts at login, lives in the tray, holds a true back-and-forth conversation behind the reactive HUD
 - **Safe hands** — `rm -rf` hard-blocked; every send / submit / delete asks first
-- **Speaks offline too** — drops to a local voice the moment the network does
-- **Knowledge engine** — instant recall across everything it remembers, *"what's new"* briefings, researched answers *with citations*, and lecture/meeting transcription
-- **Developer co-pilot** — scaffolds sites in your stack, live preview with self-review, design-to-code in your own patterns, a built-in SEO audit, and PR &amp; deploy helpers
-- **Runs your day** — reminders, proactive nudges, named routines, a daily plan &amp; recap, hands-free control of any app
-- **Email &amp; notes, live** — Gmail and Notion wired in: triage mail by sender, pull Notion tasks at a word
-
-**🔌 One sign-in away** — authorize once via `/mcp`
-- **Google Calendar** — your schedule, smart reminders, clash warnings
-- then: a deadline tracker, a spoken morning brief, a multi-account inbox, and replies drafted *in your own voice*
+- **Your day in a word** — *"status"* reads the mail that matters grouped by who it's from, *"brief me"* folds in your calendar, Notion tasks and deadlines, and a **deadline tracker** warns you before things are due
+- **Email in your voice** — triages Gmail by sender, knows your mail accounts, and drafts replies that sound like *you* — always shown before send
+- **Knowledge engine** — instant recall across everything it remembers, an **offline document brain** that answers from your own notes and PDFs, *"what's new"* briefings, researched answers *with citations*, and lecture/meeting transcription
+- **Developer co-pilot** — scaffolds sites in your stack, live preview with self-review, design-to-code in your own patterns, a built-in SEO audit, PR &amp; deploy helpers, and a spoken *"walk me through my changes"* diff review
+- **Runs your day** — reminders, proactive nudges, named routines, a daily plan &amp; recap, a one-word **focus mode**, and hands-free control of any app
+- **Yours to shape** — pick your **voice and wake word** by voice, see a **usage radar** of how your plan is trending, and keep talking through a **zero-cloud fallback** when the network drops or you're saving usage
 
 **🛠 On the horizon** — achievable next steps we're reaching for
-- **Clipboard genie** — *"explain / translate / tidy what I just copied"*
-- **Focus mode** — one word hushes every nudge while you're deep in work
-- **Your own document brain** — point JARVIS at a folder and it answers from your notes and PDFs, fully offline
-- **Spoken diff review** — *"walk me through my changes"* before you commit
-- **Make it yours** — pick your wake word and your voice
-- **Zero-cloud fallback** — a small on-device model fields the basics when you're offline or saving usage
-- **Usage radar** — tells you how your Claude usage is trending and when a session will rotate
+- **Scheduled routines** — *"every weekday at nine, brief me"* — your named routines on a timer
+- **Train your own wake word** — a guided flow to teach it a brand-new trigger phrase
+- **Offline screen sense** — a small local vision model reads the screen when you're off the grid
+- **Live meeting notetaker** — transcribe and summarise a call *as it happens*, not just afterwards
+- **Reach your phone** — push a nudge, a brief or a finished job to your phone
+- **Secure form-fill vault** — an opt-in, encrypted store of your profile details (never passwords) to speed up the forms JARVIS fills *with* you
 
 📋 Full detail, feature by feature → **[FEATURES.md](FEATURES.md)**
 
@@ -117,10 +113,16 @@ Then **double-click `Start JARVIS.vbs`** — the HUD opens in its own window, no
 | Say / type | What happens |
 |:--|:--|
 | *anything* | goes to Claude; the reply is spoken and shown |
-| *“new session”* | fresh conversation (a summary is kept) |
-| *“switch project to &lt;name&gt;”* | work in that folder |
+| *“status”* | important unread mail, grouped by who it's from |
+| *“brief me” / “good morning”* | mail + calendar + Notion + deadlines, in a sentence or two |
+| *“add deadline &lt;thing&gt; by Friday”* · *“what's due?”* | track a due date; hear what's coming |
+| *“focus”* · *“I'm back”* | hush / resume proactive nudges |
+| *“walk me through my changes”* | spoken review of your working-tree diff |
+| *“explain / translate / tidy what I just copied”* | the clipboard genie |
+| *“change your voice to …”* · *“speak faster”* | pick your voice and pace |
+| *“usage”* | how your usage is trending, and when the session rotates |
+| *“new session”* · *“switch project to &lt;name&gt;”* · *“session status”* | session control |
 | *“remember &lt;something&gt;”* | saved for every future session |
-| *“status”* | session size and working folder |
 | *“goodbye”* | quit |
 
 **Kill switch:** `Ctrl+Alt+J` (or the HUD **stop** button) halts the task and blocks all desktop actions until your next request.
