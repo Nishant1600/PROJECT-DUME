@@ -43,7 +43,7 @@ Connect Gmail, Notion, Google Calendar and GitHub once via `/mcp`, set `integrat
 
 | # | Feature | What it does |
 |:--:|:--|:--|
-| 16 | **Proactive nudges** | Learns your rhythm and speaks up on its own: *“You usually commit around now — want me to run the tests?”*, *“That meeting starts in 10 minutes.”* |
+| 16 | **Proactive nudges** ✅ | Reminders you set (“remind me to X at 6pm”) fire on their own; opt-in nudges (e.g. uncommitted changes) speak up while idle — rate-limited, with quiet hours (`jarvis.nudges`). |
 | 17 | **Daily & weekly recap** | An end-of-day summary of what you did and what's still open, written to Notion or spoken back. |
 | 18 | **Routines you name** ✅ | *”Save routine morning: brief me and open my project”* then *”run morning”* — saved multi-step instructions triggered by one phrase (`jarvis.routines`). |
 | 19 | **System tray presence** ✅ | A tray dot that changes colour with JARVIS's state; `--tray --no-window` starts invisible and opens the HUD only when you summon it (`jarvis.tray`). |

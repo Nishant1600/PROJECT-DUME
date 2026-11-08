@@ -20,6 +20,8 @@ DEFAULTS: dict[str, Any] = {
     "integrations": {"use_my_connectors": False, "startup_brief": False},
     "learning": {"enabled": True},
     "autostart": {"enabled": False},
+    # Proactive nudges (#16): reminders you set always fire; unsolicited nudges need enabled=true.
+    "nudges": {"enabled": False, "quiet_before": 8, "quiet_after": 22, "min_gap_minutes": 20},
     "claude": {
         "command": "claude",
         "model": None,

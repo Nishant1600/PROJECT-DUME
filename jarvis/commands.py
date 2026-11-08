@@ -4,8 +4,14 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+import datetime
+
 from .brain.session import SessionManager
+from .nudges import Reminders, parse_when
 from .routines import DELETE_RE, LIST_RE, SAVE_RE, Routines
+
+_REMIND = re.compile(r"^(?:/remind\s+|remind me(?:\s+to)?\s+)(?P<body>.+)$", re.I)
+_REMINDERS_LIST = re.compile(r"^(?:list|show|what are)\s+(?:my\s+)?reminders\W*$", re.I)
 
 
 @dataclass
@@ -64,4 +70,22 @@ def handle_local(text: str, sessions: SessionManager) -> Handled | None:
         names = routines.names()
         return Handled("Your routines: " + ", ".join(names) + "." if names
                        else "You haven't saved any routines yet.")
+    # reminders (#16): set by the user, fired proactively by the nudge engine
+    if m := _REMIND.match(t):
+        parsed = parse_when(m.group("body"))
+        if not parsed:
+            return Handled("When should I remind you? Try \"in 10 minutes\" or \"at 6pm\".")
+        what, ts = parsed
+        if not what:
+            return Handled("What should I remind you about?")
+        Reminders().add(what, ts)
+        when = datetime.datetime.fromtimestamp(ts).strftime("%I:%M %p").lstrip("0")
+        return Handled(f"I'll remind you to {what} at {when}.")
+    if _REMINDERS_LIST.match(t):
+        items = Reminders().all()
+        if not items:
+            return Handled("You have no reminders set.")
+        parts = [f"{r['text']} at {datetime.datetime.fromtimestamp(r['ts']).strftime('%I:%M %p').lstrip('0')}"
+                 for r in items]
+        return Handled("Reminders: " + "; ".join(parts) + ".")
     return None

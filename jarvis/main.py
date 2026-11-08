@@ -20,6 +20,7 @@ from .brain.session import SessionManager
 from .commands import handle_local
 from .config import PERSONA_FILE, ROOT, STOP_FILE, load_config
 from .confirm_server import ConfirmServer
+from .nudges import NudgeEngine
 from .speech_text import TagStripper
 
 DIM, RESET = "\033[2m", "\033[0m"
@@ -254,6 +255,13 @@ def main() -> None:
                 "available, skip that part quietly.", source="startup")
         threading.Thread(target=brief, daemon=True).start()
 
+    # proactive nudges + reminders (#16): idle-only, rate-limited; nudges opt-in via config
+    nudges = NudgeEngine(
+        cfg, bus, speaker, sessions,
+        is_idle=lambda: (not brain.busy and bus.state == "idle"
+                         and not (speaker and speaker.speaking)),
+        address_as=cfg.get("address_as") or "sir").start()
+
     # wait until the window closes or shutdown is requested
     def watch_window():
         if win:
@@ -268,6 +276,8 @@ def main() -> None:
     finally:
         if voice:
             voice.stop()
+        if nudges:
+            nudges.stop()
         if speaker:
             speaker.stop()
         if tray:

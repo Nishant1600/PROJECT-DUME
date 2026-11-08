@@ -64,6 +64,14 @@ integrations:
 learning:
   enabled: true
 
+# Proactive nudges. Reminders you set ("remind me to X at 6pm") always fire.
+# Unsolicited nudges (e.g. "you have uncommitted changes") only if enabled below.
+nudges:
+  enabled: false            # set true to allow unsolicited nudges
+  quiet_before: 8           # stay silent before this hour
+  quiet_after: 22           # ...and after this hour
+  min_gap_minutes: 20       # minimum spacing between nudges
+
 # Start JARVIS automatically when you log in, waiting for "Hey Jarvis".
 # Install/remove with:  python -m jarvis.main --install-autostart  /  --uninstall-autostart
 autostart:
