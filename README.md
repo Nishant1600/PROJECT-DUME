@@ -49,7 +49,29 @@
   ```
 - **Your day, done by voice** — once you connect Gmail, Notion, Calendar and GitHub (`/mcp`, then `integrations.use_my_connectors: true`), it checks mail, your Notion tasks, your calendar and your PRs, and brain-bursts on code with you.
 
-📋 **See the full [20-feature roadmap →](FEATURES.md)**
+## ✦ Roadmap &amp; progress
+
+Built in layers — **everything that doesn't need an external sign-in is done**; the rest is one `/mcp` away.
+
+**✅ Working today**
+- **Knows &amp; learns you** — identity, an editable rulebook, learns your corrections *and* your website style, all on a tight token budget
+- **Always there** — login autostart, a system-tray presence, real conversation, the movie-style HUD
+- **Safe hands** — `rm -rf` hard-blocked; every send / submit / delete asks first
+- **Speaks offline too** — falls back to a local voice when the network drops
+- **Knowledge** — universal recall over everything it remembers, *"what's new"* briefings, research with citations, lecture/meeting transcription
+- **Developer buddy** — scaffolds sites in your stack, live preview + self-review, design-to-code in your patterns, an SEO audit, PR &amp; deploy helpers (via `gh`)
+- **Day-to-day** — reminders &amp; proactive nudges, named routines, a daily plan &amp; recap
+- **Email &amp; notes** — Gmail and Notion connected and live: mail triage by sender, Notion tasks
+
+**🔌 One sign-in away** — authorize once via `/mcp`
+- **Google Calendar** — your schedule, reminders, clash warnings
+- then: deadline tracker, morning brief, multi-account inbox, replies drafted in your voice
+
+**🛠 Next up**
+- Live-run the **Telegram internship auto-apply** (drives the PC; confirms before it ever submits)
+- Revision / study mode, weekly recap, richer rhythm-aware nudges
+
+📋 Full detail, feature by feature → **[FEATURES.md](FEATURES.md)**
 
 ## ✦ The core, by state
 
