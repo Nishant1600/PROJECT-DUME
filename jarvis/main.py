@@ -69,7 +69,7 @@ def make_brain(cfg: dict, confirm: ConfirmServer) -> ClaudeCLI:
     settings = write_guard_settings(cfg)
     profile = Profile(cfg)  # seeds memory/identity.md so JARVIS knows your name
     brain = ClaudeCLI(cfg, PERSONA_FILE, mcp_config=mcp, permission_prompt_tool=CONFIRM_TOOL,
-                      extra_system=profile.persona_addendum())
+                      extra_system=profile.persona_addendum)  # callable: re-read live each turn
     brain.ccfg["integrations"] = cfg.get("integrations", {})
     brain.ccfg.setdefault("extra_args", [])
     if str(settings) not in brain.ccfg["extra_args"]:

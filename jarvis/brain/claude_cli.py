@@ -41,16 +41,25 @@ class ClaudeCLI:
         extra_system: str = "",
     ):
         self.ccfg = cfg["claude"]
-        self.persona = persona_file.read_text(encoding="utf-8") if persona_file.exists() else ""
+        base = persona_file.read_text(encoding="utf-8") if persona_file.exists() else ""
         if cfg.get("address_as"):
-            self.persona += f"\nAddress the user as {cfg['address_as']}.\n"
-        if extra_system:
-            self.persona += "\n" + extra_system
+            base += f"\nAddress the user as {cfg['address_as']}.\n"
+        self.persona = base
+        # extra_system may be a string, or a callable re-evaluated every turn so that
+        # live edits to the rulebook / learned profile take effect without a restart.
+        self._extra = extra_system
         self.mcp_config = mcp_config
         self.permission_prompt_tool = permission_prompt_tool
         self.exe = shutil.which(self.ccfg["command"]) or self.ccfg["command"]
         self._proc: subprocess.Popen | None = None
         self._cancelled = False
+
+    def _persona_text(self) -> str:
+        """Base persona + the live extra (identity, rulebook, learned patterns), re-read each turn."""
+        extra = self._extra() if callable(self._extra) else (self._extra or "")
+        if extra and self.persona:
+            return self.persona + "\n" + extra
+        return extra or self.persona
 
     # ------------------------------------------------------------------ args
     def _args(self, *, session_id: str | None, model: str | None, tools: str,
@@ -69,8 +78,10 @@ class ClaudeCLI:
             args += ["--mcp-config", str(self.mcp_config)]
             if self.permission_prompt_tool:
                 args += ["--permission-prompt-tool", self.permission_prompt_tool]
-        if persona and self.persona:
-            args += ["--append-system-prompt", self.persona]
+        if persona:
+            ptext = self._persona_text()
+            if ptext:
+                args += ["--append-system-prompt", ptext]
         if model:
             args += ["--model", model]
         if self.ccfg.get("effort"):

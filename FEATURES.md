@@ -49,6 +49,56 @@ Connect Gmail, Notion, Google Calendar and GitHub once via `/mcp`, set `integrat
 | 19 | **System tray presence** | Lives quietly in the tray with a status dot; the HUD opens only when you summon it, so startup is invisible until you speak. |
 | 20 | **Your voice, offline fallback** | A premium cloud voice option, and a fully-offline mode (Piper) for when there's no internet. |
 
+## 🚀 Phase 2 — being built now (21–43)
+
+**Core brain — a rule section of my own, that learns**
+
+| # | Feature | What it does |
+|:--:|:--|:--|
+| 21 | **JARVIS rulebook** ✅ | An always-loaded `memory/rules.md` (like Claude's rules): my hard do's/don'ts, tone, design defaults — authoritative every turn, hard-capped so it stays cheap. |
+| 22 | **Learns from corrections** | *"Not like that"* / *"do more of this"* rewrites a rule, so next time differs — preference-based reinforcement. |
+| 23 | **Design-pattern memory** | Learns my website style (stack, fonts, colours, layout, libraries) from repos I build; *"design me a site"* uses my patterns first. (`memory/design.md`) |
+| 24 | **Context-budget guard** ✅ | Reads only the few files that matter, under hard token caps, so *"sees everything"* never burns my plan. |
+
+**Email & accounts**
+
+| # | Feature | What it does |
+|:--:|:--|:--|
+| 25 | **"Status" briefing** | One word → important unread, grouped by company/sender, a line each; then *"read the one from X."* |
+| 26 | **Multi-account inbox** | Several Gmail accounts at once; *"reply from my college account."* |
+| 27 | **Sender/company intel** | Names who mailed me and why — recruiter, invoice, newsletter. |
+| 28 | **Replies in my voice** | Drafts matched to how I write, shown before send. |
+
+**Studies**
+
+| # | Feature | What it does |
+|:--:|:--|:--|
+| 29 | **Study tutor** | *"Explain this topic"* → saves notes to Notion, builds a personal knowledge base. |
+| 30 | **Deadline tracker** | Pulls due dates from mail / calendar / Notion and warns me ahead. |
+| 31 | **Revision mode** | Quizzes me from my own notes, spaced repetition. |
+| 32 | **Research & citations** | Reads papers and pages, summarizes, keeps the references. |
+| 33 | **Lecture capture** | Transcribes a recording or live audio → summary + action items. |
+
+**Website / development**
+
+| # | Feature | What it does |
+|:--:|:--|:--|
+| 34 | **Scaffolder from my template** | New site spun up in my preferred stack/boilerplate automatically. |
+| 35 | **Live preview + self-review** | Runs the dev server, opens it, screenshots, critiques against my design rules. |
+| 36 | **Design-to-code** | Describe or sketch → built to my patterns → iterates on *"make the hero bigger."* |
+| 37 | **PR & repo buddy** | Reviews diffs, flags issues, watches CI, drafts PR descriptions. |
+| 38 | **Deploy helper** | Guided deploy to Vercel / Netlify / etc. with confirmation gates. |
+| 41 | **SEO built in** | On-page SEO, meta / OpenGraph, JSON-LD schema and a Lighthouse pass whenever I build or review a site. |
+
+**Day-to-day / other**
+
+| # | Feature | What it does |
+|:--:|:--|:--|
+| 39 | **Daily planner** | Morning plan from calendar + tasks + mail; evening recap of what moved. |
+| 40 | **Universal recall** | *"Remember this,"* *"what did I say about X last week?"* — searchable memory across voice, mail and notes. |
+| 42 | **"What's new" briefings** | *"Tell me something new in Three.js / my field"* — tracks topics I follow and surfaces what changed. |
+| 43 | **Full system control + auto-apply** | Drives any app by voice (mouse + keyboard): reads my Telegram internship bot and applies on my behalf, fills forms, operates the whole PC — **always confirming before it submits, sends, buys or deletes.** |
+
 ---
 
 <div align="center">

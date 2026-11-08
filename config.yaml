@@ -56,7 +56,7 @@ desktop:
 # Gmail, Notion, Google Calendar, GitHub, Slack, etc. Turn on AFTER you connect them.
 # Loads your own MCP servers into JARVIS's brain (uses a few more tokens per turn).
 integrations:
-  use_my_connectors: false
+  use_my_connectors: true
   # Optional greeting brief when JARVIS starts: a quick look at mail / calendar / Notion.
   startup_brief: false
 

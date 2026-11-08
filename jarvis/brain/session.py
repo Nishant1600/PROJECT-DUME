@@ -156,8 +156,12 @@ class SessionManager:
         self.summary_file.write_text(f"(updated {stamp})\n{summary}\n", encoding="utf-8")
         # Learn durable working patterns from this conversation (background, cheap model).
         try:
-            if self.profile.learn(summary, self.brain, model=self.cfg["claude"].get("summary_model")):
+            model = self.cfg["claude"].get("summary_model")
+            if self.profile.learn(summary, self.brain, model=model):
                 self.on_status("Updated what I know about how you work.")
+            # #23: if this session touched website work, refresh learned design patterns
+            if self.profile.learn_design(summary, self.brain, model=model):
+                self.on_status("Noted how you build websites.")
         except Exception:
             pass
 
@@ -210,6 +214,13 @@ class SessionManager:
 
             for fact in REMEMBER_RE.findall(res.text or ""):
                 self.remember(fact)
+            # #22: turn a durable "always/never/I prefer..." into a standing rule (free, immediate)
+            try:
+                learned = self.profile.capture_preference(text)
+                if learned:
+                    self.on_status(f"Noted a rule: {learned}")
+            except Exception:
+                pass
             self._append_transcript("user", text)
             self._append_transcript("assistant", REMEMBER_RE.sub("", res.text or "").strip())
             self._save_state()
