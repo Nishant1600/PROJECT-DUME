@@ -64,10 +64,17 @@ class VoiceLoop:
             on_partial=lambda t: self.bus.publish(B.PARTIAL, text=t),
         )
 
+    def greeting(self) -> str:
+        import datetime
+        h = datetime.datetime.now().hour
+        part = "Good morning" if h < 12 else "Good afternoon" if h < 17 else "Good evening"
+        who = self.cfg.get("address_as") or "sir"
+        return f"{part}, {who}. JARVIS online and standing by."
+
     def _run(self):
         v = self.cfg["voice"]
         if self.speaker:
-            self.speaker.say("JARVIS online.")
+            self.speaker.say(self.greeting())
         listen_now = False
         while not self._stop.is_set():
             try:

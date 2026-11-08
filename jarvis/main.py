@@ -64,9 +64,13 @@ def write_guard_settings(cfg: dict) -> Path:
 
 
 def make_brain(cfg: dict, confirm: ConfirmServer) -> ClaudeCLI:
+    from .profile import Profile
     mcp = build_mcp_config(cfg, confirm)
     settings = write_guard_settings(cfg)
-    brain = ClaudeCLI(cfg, PERSONA_FILE, mcp_config=mcp, permission_prompt_tool=CONFIRM_TOOL)
+    profile = Profile(cfg)  # seeds memory/identity.md so JARVIS knows your name
+    brain = ClaudeCLI(cfg, PERSONA_FILE, mcp_config=mcp, permission_prompt_tool=CONFIRM_TOOL,
+                      extra_system=profile.persona_addendum())
+    brain.ccfg["integrations"] = cfg.get("integrations", {})
     brain.ccfg.setdefault("extra_args", [])
     if str(settings) not in brain.ccfg["extra_args"]:
         brain.ccfg["extra_args"] = list(brain.ccfg["extra_args"]) + ["--settings", str(settings)]
@@ -112,6 +116,13 @@ def run_text(assistant: Assistant, confirm: ConfirmServer) -> None:
             continue
         if line.lower() in ("quit", "exit", "goodbye"):
             break
+        from .commands import handle_local
+        local = handle_local(line, assistant.sessions)
+        if local:
+            print(f"jarvis> {local.reply}")
+            if local.quit:
+                break
+            continue
         STOP_FILE.unlink(missing_ok=True)
         stripper = TagStripper()
         print("jarvis> ", end="", flush=True)
@@ -134,8 +145,19 @@ def main() -> None:
     ap.add_argument("--no-voice", action="store_true", help="HUD only, no microphone")
     ap.add_argument("--text", action="store_true", help="plain terminal, no HUD")
     ap.add_argument("--no-window", action="store_true", help="don't open the HUD window (serve only)")
+    ap.add_argument("--install-autostart", action="store_true", help="start JARVIS at login")
+    ap.add_argument("--uninstall-autostart", action="store_true", help="stop starting at login")
     ap.add_argument("--config")
     args = ap.parse_args()
+
+    if args.install_autostart or args.uninstall_autostart:
+        from . import autostart
+        if args.install_autostart:
+            link = autostart.install()
+            print(f"JARVIS will now start when you log in.\n  {link}\nRemove it with --uninstall-autostart.")
+        else:
+            print("Removed from login startup." if autostart.uninstall() else "Was not set to start at login.")
+        return
 
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -199,7 +221,18 @@ def main() -> None:
         voice.start()
     else:
         bus.set_state("idle")
-        bus.publish(B.NOTICE, text="Type a command below.", level="info")
+        bus.publish(B.NOTICE, text=f"Good day, {cfg.get('address_as') or 'sir'}. Type a command below.", level="info")
+
+    # optional startup brief (needs your connectors authorized)
+    integ = cfg.get("integrations", {})
+    if integ.get("startup_brief") and integ.get("use_my_connectors"):
+        def brief():
+            time.sleep(2)
+            assistant.handle_input(
+                "Give me a brief: any important unread email, what's on my calendar today, and "
+                "Notion tasks due. Keep it to two or three spoken sentences. If a tool isn't "
+                "available, skip that part quietly.", source="startup")
+        threading.Thread(target=brief, daemon=True).start()
 
     # wait until the window closes or shutdown is requested
     def watch_window():

@@ -1,7 +1,8 @@
 # JARVIS configuration. Paths are relative to the DUME folder unless absolute.
 
-# How JARVIS addresses you in replies, e.g. "Nishant" or "boss". Empty = no name.
-address_as: ""
+# Your name, and how JARVIS addresses you in replies ("sir", "Nishant", "boss"...).
+name: Nishant
+address_as: Sir
 
 claude:
   command: claude            # the Claude Code CLI (uses your Claude subscription login)
@@ -50,3 +51,20 @@ voice:
 desktop:
   enabled: true
   kill_switch_hotkey: ctrl+alt+j
+
+# Let JARVIS use the Claude connectors you've authorized (via /mcp in Claude Code):
+# Gmail, Notion, Google Calendar, GitHub, Slack, etc. Turn on AFTER you connect them.
+# Loads your own MCP servers into JARVIS's brain (uses a few more tokens per turn).
+integrations:
+  use_my_connectors: false
+  # Optional greeting brief when JARVIS starts: a quick look at mail / calendar / Notion.
+  startup_brief: false
+
+# Learns how you work and saves it to memory/profile.md, injected into every session.
+learning:
+  enabled: true
+
+# Start JARVIS automatically when you log in, waiting for "Hey Jarvis".
+# Install/remove with:  python -m jarvis.main --install-autostart  /  --uninstall-autostart
+autostart:
+  enabled: false   # set by the installer; informational here

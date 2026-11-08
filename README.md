@@ -39,6 +39,18 @@
 > 🖥️ **Runs your PC** — full terminal and desktop control, with hard safety limits.
 > 🌌 **Shows it all** — a three.js HUD that glows, pulses to your voice, and never looks like a terminal.
 
+## ✦ Personal &amp; always-on
+
+- **Knows you** — addresses you as *“Sir”*, greets you by name, and remembers you between sessions.
+- **Learns how you work** — after each conversation it distils your projects, tools, hours and habits into `memory/profile.md` and uses them next time, so answers fit your style without being asked.
+- **Always there** — starts at login and waits for *“Hey Jarvis”*:
+  ```bash
+  python -m jarvis.main --install-autostart      # (and --uninstall-autostart)
+  ```
+- **Your day, done by voice** — once you connect Gmail, Notion, Calendar and GitHub (`/mcp`, then `integrations.use_my_connectors: true`), it checks mail, your Notion tasks, your calendar and your PRs, and brain-bursts on code with you.
+
+📋 **See the full [20-feature roadmap →](FEATURES.md)**
+
 ## ✦ The core, by state
 
 | State | Colour | Meaning |

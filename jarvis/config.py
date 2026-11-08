@@ -15,7 +15,11 @@ STOP_FILE = LOGS_DIR / "STOP"
 PERSONA_FILE = ROOT / "jarvis" / "persona.md"
 
 DEFAULTS: dict[str, Any] = {
+    "name": "",
     "address_as": "",
+    "integrations": {"use_my_connectors": False, "startup_brief": False},
+    "learning": {"enabled": True},
+    "autostart": {"enabled": False},
     "claude": {
         "command": "claude",
         "model": None,

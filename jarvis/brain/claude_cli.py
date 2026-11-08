@@ -58,10 +58,11 @@ class ClaudeCLI:
         args = [
             self.exe, "-p",
             "--output-format", "stream-json", "--verbose", "--include-partial-messages",
-            "--strict-mcp-config",          # only our MCP servers, not every plugin's
             "--disable-slash-commands",     # no skill listings in the prompt
             "--tools", tools,
         ]
+        if not self.ccfg.get("integrations", {}).get("use_my_connectors"):
+            args.append("--strict-mcp-config")   # only our MCP servers, not every plugin's
         if allowed:
             args += ["--allowedTools", ",".join(allowed)]
         if mcp and self.mcp_config:

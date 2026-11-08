@@ -35,6 +35,8 @@ class SessionManager:
         self.transcript_file = RUNTIME_DIR / "transcript.jsonl"
         self.summary_file = MEMORY_DIR / "summary.md"
         self.facts_file = MEMORY_DIR / "facts.md"
+        from ..profile import Profile
+        self.profile = Profile(cfg)   # identity + learned working patterns
         self._lock = threading.RLock()
         self.state = self._load_state()
 
@@ -150,17 +152,23 @@ class SessionManager:
             self.on_status(f"Summary failed ({res.error}); kept the raw transcript tail.")
             return
         stamp = datetime.now().strftime("%Y-%m-%d %H:%M")
-        self.summary_file.write_text(f"(updated {stamp})\n{res.text.strip()}\n", encoding="utf-8")
+        summary = res.text.strip()
+        self.summary_file.write_text(f"(updated {stamp})\n{summary}\n", encoding="utf-8")
+        # Learn durable working patterns from this conversation (background, cheap model).
+        try:
+            if self.profile.learn(summary, self.brain, model=self.cfg["claude"].get("summary_model")):
+                self.on_status("Updated what I know about how you work.")
+        except Exception:
+            pass
 
     def context_block(self) -> str:
-        parts = []
+        recent = []
         if self.summary_file.exists() and self.summary_file.read_text(encoding="utf-8").strip():
-            parts.append("<summary>\n" + self.summary_file.read_text(encoding="utf-8").strip() + "\n</summary>")
+            recent.append("<recently>\n" + self.summary_file.read_text(encoding="utf-8").strip() + "\n</recently>")
         if self.facts_file.exists() and self.facts_file.read_text(encoding="utf-8").strip():
-            parts.append("<facts>\n" + self.facts_file.read_text(encoding="utf-8").strip() + "\n</facts>")
-        if not parts:
-            return ""
-        return "Context from earlier (background only, don't recite it):\n" + "\n".join(parts) + "\n\n"
+            recent.append("<facts you told me>\n" + self.facts_file.read_text(encoding="utf-8").strip() + "\n</facts you told me>")
+        # identity + learned profile first, then recent summary/facts
+        return self.profile.context_block(extra="\n".join(recent))
 
     # ------------------------------------------------------------ memory
     def remember(self, fact: str) -> None:
