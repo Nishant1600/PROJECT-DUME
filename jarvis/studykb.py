@@ -34,8 +34,10 @@ def save(topic: str, notes: str) -> dict:
     STUDY_DIR.mkdir(parents=True, exist_ok=True)
     slug = _slug(topic)
     today = datetime.date.today().isoformat()
-    body = (f"<!-- topic: {topic.strip()} | saved: {today} -->\n"
-            f"# {topic.strip()}\n\n{notes.strip()}\n")
+    notes_clean = notes.strip()
+    # don't add our own H1 if the notes already open with a Markdown heading (avoids a doubled title)
+    heading = "" if re.match(r"^#{1,6}\s", notes_clean) else f"# {topic.strip()}\n\n"
+    body = f"<!-- topic: {topic.strip()} | saved: {today} -->\n{heading}{notes_clean}\n"
     _path(slug).write_text(body, encoding="utf-8")
     return {"slug": slug, "topic": topic.strip(), "path": str(_path(slug))}
 
