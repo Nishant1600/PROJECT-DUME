@@ -39,7 +39,10 @@ def status_prompt(cfg: dict | None = None) -> str:
         "(for example 'two from your bank about a statement, one from a recruiter at Acme'). Put "
         "the things that matter first and skip newsletters, promotions and automated noise. Keep "
         "it to a few spoken sentences, don't read anything out verbatim, and then I may ask you to "
-        "'read the one from X'. If the Gmail connector isn't available, say so briefly."
+        "'read the one from X'. If the Gmail connector isn't available, say so briefly.\n"
+        "After you tell me the status, quietly register the senders you named so I can follow up: "
+        "run `python -m jarvis.followup set mail \"<comma-separated list of the senders/companies "
+        "you just mentioned>\"` via Bash (no need to mention that you did)."
     )
 
 

@@ -75,6 +75,18 @@ docbrain:
   folders: []
     # - "C:/Users/hp/Documents/Notes"
 
+# Reach your phone: push a brief, a nudge or a finished job to your phone. Opt-in.
+# Pick ONE service and fill its fields, then say "send that to my phone".
+push:
+  enabled: false
+  service: ntfy             # ntfy | pushover | telegram
+  ntfy_topic: null          # ntfy.sh topic — pick something long and unguessable
+  ntfy_server: null         # optional self-hosted ntfy base URL (default https://ntfy.sh)
+  pushover_token: null
+  pushover_user: null
+  telegram_token: null
+  telegram_chat: null
+
 # Learns how you work and saves it to memory/profile.md, injected into every session.
 learning:
   enabled: true

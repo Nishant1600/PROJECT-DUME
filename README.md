@@ -64,13 +64,13 @@ JARVIS grows in layers — and **everything below is already shipping.** Gmail, 
 - **Runs your day** — reminders, proactive nudges, named routines, a daily plan &amp; recap, a one-word **focus mode**, and hands-free control of any app
 - **Yours to shape** — pick your **voice and wake word** by voice, see a **usage radar** of how your plan is trending, and keep talking through a **zero-cloud fallback** when the network drops or you're saving usage
 
-**🛠 On the horizon** — achievable next steps we're reaching for
-- **Scheduled routines** — *"every weekday at nine, brief me"* — your named routines on a timer
-- **Train your own wake word** — a guided flow to teach it a brand-new trigger phrase
-- **Offline screen sense** — a small local vision model reads the screen when you're off the grid
-- **Live meeting notetaker** — transcribe and summarise a call *as it happens*, not just afterwards
-- **Reach your phone** — push a nudge, a brief or a finished job to your phone
-- **Secure form-fill vault** — an opt-in, encrypted store of your profile details (never passwords) to speed up the forms JARVIS fills *with* you
+**✅ Phase 3 — now shipping** — the last horizon, built, plus reliability and depth
+- **Stays alive & honest** — an **auth watchdog** that warns before the headless sign-in lapses, a *"are you okay?"* **self health-check**, and a **crash watchdog** that relaunches on failure
+- **Scheduled routines** — *"brief me every weekday at nine"* — named instructions on a timer
+- **Studies** — a **study tutor** that saves revision notes, **spaced-repetition** quizzing from them, a **live meeting notetaker**, and a glanceable **agenda board**
+- **Day-to-day** — **daily & weekly recaps** to Notion, **smart calendar scheduling**, **push to your phone**, a DPAPI-encrypted **form-fill vault** (never passwords), and **multilingual** listening + speaking
+- **Developer depth** — an **accessibility audit**, a **performance budget** check, your own reusable **component library**, and a one-command **open-a-PR** flow
+- **Voice & interaction** — **train your own wake word**, **offline screen sense**, and **follow-up memory** (*"read the one from the bank"* after a status)
 
 📋 Full detail, feature by feature → **[FEATURES.md](FEATURES.md)**
 
@@ -117,8 +117,14 @@ Then **double-click `Start JARVIS.vbs`** — the HUD opens in its own window, no
 | *“brief me” / “good morning”* | mail + calendar + Notion + deadlines, in a sentence or two |
 | *“add deadline &lt;thing&gt; by Friday”* · *“what's due?”* | track a due date; hear what's coming |
 | *“focus”* · *“I'm back”* | hush / resume proactive nudges |
-| *“walk me through my changes”* | spoken review of your working-tree diff |
+| *“walk me through my changes”* · *“open a PR”* | spoken diff review · branch → commit → PR with confirmation |
 | *“explain / translate / tidy what I just copied”* | the clipboard genie |
+| *“teach me &lt;topic&gt;”* · *“quiz me”* | study tutor saves notes · spaced-repetition revision |
+| *“take notes” … “stop taking notes”* | a live meeting transcript → summary + action items |
+| *“recap my week”* · *“find me an hour tomorrow for …”* | recap to Notion · smart calendar scheduling |
+| *“what's on my board?”* · *“are you okay?”* | agenda board · a spoken self health-check |
+| *“brief me every weekday at nine”* | a scheduled routine on a timer |
+| *“speak in Hindi”* · *“send that to my phone”* | switch language · push to your phone |
 | *“change your voice to …”* · *“speak faster”* | pick your voice and pace |
 | *“usage”* | how your usage is trending, and when the session rotates |
 | *“new session”* · *“switch project to &lt;name&gt;”* · *“session status”* | session control |

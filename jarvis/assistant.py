@@ -6,6 +6,7 @@ state goes onto the bus so the HUD mirrors exactly what JARVIS is doing.
 """
 from __future__ import annotations
 
+import re
 import threading
 import time
 from dataclasses import dataclass
@@ -44,6 +45,7 @@ class Assistant:
         self._pending_lock = threading.Lock()
         self.interrupted = threading.Event()
         self._confirm_counter = 0
+        self._last_reply = ""            # last spoken answer (for "send that to my phone")
 
     # ----------------------------------------------------------------- output
     def _emit_session(self) -> None:
@@ -145,11 +147,13 @@ class Assistant:
         self.interrupted.clear()
         STOP_FILE.unlink(missing_ok=True)
         self.bus.say_line("user", text)
+        original = text          # keep the raw utterance (for the offline screen-sense path)
 
         local = handle_local(text, self.sessions)
         if local:
             self.bus.say_line("jarvis", local.reply)
             self.speak(local.reply)
+            self._last_reply = local.reply
             self._emit_session()
             self.bus.set_state("idle")
             if local.quit:
@@ -161,55 +165,115 @@ class Assistant:
         from .voices import parse_command as _voice_cmd
         vc = _voice_cmd(text)
         if vc:
-            reply = self._apply_voice_change(*vc)
-            self.bus.say_line("jarvis", reply)
-            self.speak(reply)
-            self._emit_session()
-            self.bus.set_state("idle")
-            return
+            return self._local_reply(self._apply_voice_change(*vc))
+
+        # multilingual (#63): switch listening + speaking language, live
+        from .lang import parse_command as _lang_cmd
+        lc = _lang_cmd(text)
+        if lc:
+            return self._local_reply(self._apply_language_change(*lc))
 
         # trivia answered locally (time, date, greeting, simple maths, "who are you") — no Claude
         # call, so it never costs usage and works offline
         from .offline_brain import basics_answer
         trivia = basics_answer(text, self.cfg)
         if trivia:
-            self.bus.say_line("jarvis", trivia)
-            self.speak(trivia)
-            self._emit_session()
-            self.bus.set_state("idle")
-            return
+            return self._local_reply(trivia)
 
-        # morning brief / status: a trigger phrase expands into the full instruction for the brain
-        from .brief import brief_prompt, is_brief_trigger, is_status_trigger, status_prompt
-        if is_brief_trigger(text):
-            self.bus.publish(B.NOTICE, text="Putting your brief together.", level="info")
-            text = brief_prompt(self.cfg)
-        elif is_status_trigger(text):
-            self.bus.publish(B.NOTICE, text="Checking your mail.", level="info")
-            text = status_prompt(self.cfg)
+        # live notetaker (#57): start / stop a timestamped meeting transcript
+        from . import notetaker
+        if notetaker.is_start_trigger(text):
+            notetaker.start()
+            return self._local_reply('I\'m taking notes now. Say "stop taking notes" when you\'re done.')
+        if notetaker.is_stop_trigger(text):
+            path = notetaker.stop()
+            if not path:
+                return self._local_reply("I wasn't taking notes just now.")
+            self.bus.publish(B.NOTICE, text="Wrapping up your notes.", level="info")
+            text, expanded = notetaker.summary_prompt(path, self.cfg), True
         else:
-            from .diffreview import is_trigger as is_diff_trigger, prompt as diff_prompt
-            from .clipboard import build_prompt, get_text, is_trigger
-            if is_diff_trigger(text):
-                self.bus.publish(B.NOTICE, text="Reading your changes.", level="info")
-                text = diff_prompt(str(self.sessions.cwd))
-            elif is_trigger(text):
-                # clipboard genie: "explain / translate / tidy what I just copied"
-                clip = get_text()
-                if not clip:
-                    self.bus.say_line("jarvis", "There's nothing text-like on your clipboard.")
-                    self.speak("There's nothing I can read on your clipboard.")
-                    self.bus.set_state("idle")
-                    return
-                self.bus.publish(B.NOTICE, text="Working on what you copied.", level="info")
-                text = build_prompt(text, clip)
+            notetaker.feed(text)        # if a session is active, capture this utterance
+            expanded = False
+
+        # push the last reply to the phone (#61): opt-in, user-initiated each time
+        from . import push
+        if not expanded and push.is_configured(self.cfg) and \
+                re.search(r"\b(send|push|text)\b.*\bto my phone\b", text, re.I):
+            ok = push.send("JARVIS", self._last_reply or "Nothing to send yet.", self.cfg)
+            return self._local_reply("Sent to your phone." if ok else "I couldn't reach your phone just now.")
+
+        # follow-up reference (#70): "read the one from the bank" after a status briefing
+        if not expanded:
+            from .followup import is_followup, resolve_now
+            if is_followup(text):
+                res = resolve_now(text)
+                if res:
+                    self.bus.publish(B.NOTICE, text=f"On it — the one from {res[0]}.", level="info")
+                    text, expanded = res[1], True
+
+        # morning brief / status / studies / dev triggers → full brain instructions
+        if not expanded:
+            from .brief import brief_prompt, is_brief_trigger, is_status_trigger, status_prompt
+            if is_brief_trigger(text):
+                self.bus.publish(B.NOTICE, text="Putting your brief together.", level="info")
+                text = brief_prompt(self.cfg)
+            elif is_status_trigger(text):
+                self.bus.publish(B.NOTICE, text="Checking your mail.", level="info")
+                text = status_prompt(self.cfg)
+            else:
+                from .diffreview import is_trigger as is_diff_trigger, prompt as diff_prompt
+                from .clipboard import build_prompt, get_text, is_trigger
+                from .tutor import is_trigger as tutor_t, topic_of as tutor_topic, tutor_prompt
+                from .revision import is_trigger as rev_t, topic_of as rev_topic, revision_prompt
+                from .recap import is_trigger as recap_t, span_of, recap_prompt
+                from .scheduling import is_trigger as sch_t, scheduling_prompt
+                from .prflow import is_trigger as pr_t, pr_prompt
+                from . import components as _comp, waketrain as _wt
+                if is_diff_trigger(text):
+                    self.bus.publish(B.NOTICE, text="Reading your changes.", level="info")
+                    text = diff_prompt(str(self.sessions.cwd))
+                elif is_trigger(text):
+                    # clipboard genie: "explain / translate / tidy what I just copied"
+                    clip = get_text()
+                    if not clip:
+                        return self._local_reply("There's nothing I can read on your clipboard.")
+                    self.bus.publish(B.NOTICE, text="Working on what you copied.", level="info")
+                    text = build_prompt(text, clip)
+                elif tutor_t(text):
+                    self.bus.publish(B.NOTICE, text="Let's study.", level="info")
+                    text = tutor_prompt(tutor_topic(text), self.cfg)
+                elif rev_t(text):
+                    self.bus.publish(B.NOTICE, text="Revision time.", level="info")
+                    text = revision_prompt(self.cfg, rev_topic(text))
+                elif recap_t(text):
+                    self.bus.publish(B.NOTICE, text="Pulling your recap together.", level="info")
+                    text = recap_prompt(self.cfg, span_of(text))
+                elif sch_t(text):
+                    self.bus.publish(B.NOTICE, text="Finding you a slot.", level="info")
+                    text = scheduling_prompt(text, self.cfg)
+                elif pr_t(text):
+                    self.bus.publish(B.NOTICE, text="Preparing the pull request.", level="info")
+                    text = pr_prompt(str(self.sessions.cwd), self.cfg)
+                elif _comp.use_name(text):
+                    name = _comp.use_name(text)
+                    code = _comp.get(name)
+                    if not code:
+                        return self._local_reply(f"I don't have a saved component called {name}.")
+                    self.bus.publish(B.NOTICE, text=f"Building with your {name}.", level="info")
+                    text = _comp.use_prompt(name, code, text)
+                elif _wt.is_trigger(text):
+                    text = ("The user wants to train a custom wake word. Ask them for the exact phrase "
+                            "if it isn't clear, then run `python -m jarvis.waketrain plan \"<phrase>\"` "
+                            "and `python -m jarvis.waketrain synth \"<phrase>\"` via Bash and walk them "
+                            "through the steps those print. Don't say it's trained until an .onnx exists.")
 
         # #18: a saved routine's trigger phrase expands into its instruction for the brain
-        routine = self.routines.match(text)
-        if routine:
-            name, prompt = routine
-            self.bus.publish(B.NOTICE, text=f"Running the {name} routine.", level="info")
-            text = prompt
+        if not expanded:
+            routine = self.routines.match(text)
+            if routine:
+                name, prompt = routine
+                self.bus.publish(B.NOTICE, text=f"Running the {name} routine.", level="info")
+                text = prompt
 
         self.bus.set_state("thinking")
         stripper, splitter = TagStripper(), SentenceSplitter()
@@ -247,9 +311,22 @@ class Assistant:
         final_text = "".join(full).strip()
         if res.is_error and not res.cancelled:
             from .offline_brain import answer as offline_answer, is_offline_error
-            if is_offline_error(res.error) and not final_text:
+            from .authwatch import advice as auth_advice, is_auth_error, note_auth_failure
+            if is_auth_error(res.error) and not final_text:
+                # the headless Claude sign-in couldn't authenticate (#51)
+                note_auth_failure()
+                reply = auth_advice() or ("My Claude sign-in needs attention — please run "
+                                          "`claude setup-token` so I can keep working.")
+                self.bus.say_line("jarvis", reply, final=True)
+                self.speak(reply)
+                self.bus.publish(B.NOTICE, text="Sign-in problem — run claude setup-token.", level="error")
+            elif is_offline_error(res.error) and not final_text:
                 # network is down and the cloud brain never replied — field it locally
-                reply = offline_answer(text, self.cfg)
+                from . import screensense
+                if screensense.is_trigger(original):
+                    reply = screensense.answer(original, screensense.read_screen_text())  # #69
+                else:
+                    reply = offline_answer(text, self.cfg)
                 self.bus.say_line("jarvis", reply, final=True)
                 self.speak(reply)
                 self.bus.publish(B.NOTICE, text="Offline — answered locally.", level="warn")
@@ -259,12 +336,39 @@ class Assistant:
                 self.speak("Sorry, something went wrong with that request.")
         else:
             self.bus.say_line("jarvis", final_text, final=True)
+        if final_text:
+            self._last_reply = final_text
         self._emit_session()
 
         if self.speaker:
             while self.speaker.speaking and not self.interrupted.is_set():
                 time.sleep(0.05)
         self.bus.set_state("idle")
+
+    def _local_reply(self, reply: str) -> None:
+        """Speak a locally-produced answer and settle back to idle (no brain call)."""
+        self.bus.say_line("jarvis", reply)
+        self.speak(reply)
+        self._last_reply = reply
+        self._emit_session()
+        self.bus.set_state("idle")
+        return None
+
+    def _apply_language_change(self, lang: str, code: str, voice: str) -> str:
+        """Switch the listening language + speaking voice (live and in config)."""
+        from .lang import set_language
+        ok = set_language(code, voice)
+        if self.speaker:
+            self.speaker.voice = voice
+        if self.listener:
+            try:
+                self.listener.language = code
+            except Exception:
+                pass
+        self.cfg.setdefault("voice", {})["tts_voice"] = voice
+        self.cfg["voice"]["language"] = code
+        return (f"Switching to {lang}." if ok else
+                f"I'll speak {lang} now, though I couldn't save it to config.")
 
     def _apply_voice_change(self, kind: str, val: str) -> str:
         """Apply a voice/pace/wake-word change to config and (where possible) the live speaker."""

@@ -24,6 +24,10 @@ DEFAULTS: dict[str, Any] = {
     "docbrain": {"folders": []},
     # Zero-cloud fallback: a local Ollama model (if running) fields basics when offline.
     "offline": {"enabled": True, "model": None},
+    # Reach your phone (#61): push briefs / finished jobs. Opt-in; pick one service.
+    "push": {"enabled": False, "service": "ntfy", "ntfy_topic": None, "ntfy_server": None,
+             "pushover_token": None, "pushover_user": None,
+             "telegram_token": None, "telegram_chat": None},
     "learning": {"enabled": True},
     "autostart": {"enabled": False},
     # Proactive nudges (#16): reminders you set always fire; unsolicited nudges need enabled=true.

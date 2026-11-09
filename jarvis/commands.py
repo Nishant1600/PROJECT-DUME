@@ -62,6 +62,14 @@ def handle_local(text: str, sessions: SessionManager) -> Handled | None:
     from .usage import is_trigger as _usage_trigger, spoken as _usage_spoken
     if _usage_trigger(t):
         return Handled(_usage_spoken(sessions.status(), sessions.cfg))
+    # self health-check (#52): mic, TTS, GPU, CLI, connectors, disk — local, instant
+    from .healthcheck import is_trigger as _health_trigger, run_checks as _run_health
+    if _health_trigger(t):
+        return Handled(_run_health(sessions.cfg)["summary"])
+    # agenda board (#58): a glanceable spoken view of deadlines, schedules and reminders
+    from .agenda import is_trigger as _agenda_trigger, board as _board, spoken as _board_spoken
+    if _agenda_trigger(t):
+        return Handled(_board_spoken(_board(sessions.cfg)))
     if m := _REMEMBER.match(t):
         sessions.remember(m.group("fact"))
         return Handled("Noted. I'll remember that.")
@@ -127,4 +135,32 @@ def handle_local(text: str, sessions: SessionManager) -> Handled | None:
         from . import focus
         focus.on()
         return Handled("Focus mode on. I'll stay quiet until you say you're back.")
+    # scheduled routines (#54): "brief me every weekday at 9am" / "schedule X every day at 8"
+    from . import schedules as _sched
+    if _sched.LIST_RE.match(t):
+        items = _sched.Schedules().all()
+        if not items:
+            return Handled("You have no schedules set.")
+        parts = [f"{it['instruction']} {_sched.describe(it['spec'])}" for it in items[:6]]
+        return Handled("Scheduled: " + "; ".join(parts) + ".")
+    if m := _sched.DELETE_RE.match(t):
+        ident = m.group("ident").strip(" .")
+        return Handled("Removed that schedule." if _sched.Schedules().remove(ident)
+                       else f"I'm not running a schedule matching {ident}.")
+    _sched_body = None
+    if m := _sched.SAVE_RE.match(t):
+        _sched_body = m.group("body")
+    elif _sched.has_schedule_keyword(t):
+        parsed = _sched.parse_schedule(t)
+        if parsed and parsed[0]:
+            _sched_body = t
+    if _sched_body is not None:
+        parsed = _sched.parse_schedule(_sched_body)
+        if not parsed:
+            return Handled("When should it run? Try \"brief me every weekday at 9am\".")
+        instr, spec = parsed
+        if not instr:
+            return Handled("What should I run on that schedule?")
+        _sched.Schedules().add(instr, spec)
+        return Handled(f"Scheduled: {instr} — {_sched.describe(spec)}.")
     return None

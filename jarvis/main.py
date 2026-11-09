@@ -124,21 +124,55 @@ def run_text(assistant: Assistant, confirm: ConfirmServer) -> None:
             if local.quit:
                 break
             continue
-        from .brief import brief_prompt, is_brief_trigger, is_status_trigger, status_prompt
-        if is_brief_trigger(line):
-            line = brief_prompt(assistant.cfg)
-        elif is_status_trigger(line):
-            line = status_prompt(assistant.cfg)
+        from . import notetaker
+        if notetaker.is_start_trigger(line):
+            notetaker.start(); print('jarvis> Taking notes. Say "stop taking notes" to finish.'); continue
+        if notetaker.is_stop_trigger(line):
+            path = notetaker.stop()
+            if not path:
+                print("jarvis> I wasn't taking notes."); continue
+            line = notetaker.summary_prompt(path, assistant.cfg)
         else:
-            from .clipboard import build_prompt, get_text, is_trigger
-            from .diffreview import is_trigger as is_diff_trigger, prompt as diff_prompt
-            if is_diff_trigger(line):
-                line = diff_prompt(str(assistant.sessions.cwd))
-            elif is_trigger(line):
-                clip = get_text()
-                if not clip:
-                    print("jarvis> There's nothing text-like on your clipboard."); continue
-                line = build_prompt(line, clip)
+            notetaker.feed(line)
+            from .brief import brief_prompt, is_brief_trigger, is_status_trigger, status_prompt
+            from .followup import is_followup, resolve_now
+            if is_followup(line) and resolve_now(line):
+                line = resolve_now(line)[1]
+            elif is_brief_trigger(line):
+                line = brief_prompt(assistant.cfg)
+            elif is_status_trigger(line):
+                line = status_prompt(assistant.cfg)
+            else:
+                from .clipboard import build_prompt, get_text, is_trigger
+                from .diffreview import is_trigger as is_diff_trigger, prompt as diff_prompt
+                from .tutor import is_trigger as tutor_t, topic_of as tutor_topic, tutor_prompt
+                from .revision import is_trigger as rev_t, topic_of as rev_topic, revision_prompt
+                from .recap import is_trigger as recap_t, span_of, recap_prompt
+                from .scheduling import is_trigger as sch_t, scheduling_prompt
+                from .prflow import is_trigger as pr_t, pr_prompt
+                from . import components as _comp
+                if is_diff_trigger(line):
+                    line = diff_prompt(str(assistant.sessions.cwd))
+                elif is_trigger(line):
+                    clip = get_text()
+                    if not clip:
+                        print("jarvis> There's nothing text-like on your clipboard."); continue
+                    line = build_prompt(line, clip)
+                elif tutor_t(line):
+                    line = tutor_prompt(tutor_topic(line), assistant.cfg)
+                elif rev_t(line):
+                    line = revision_prompt(assistant.cfg, rev_topic(line))
+                elif recap_t(line):
+                    line = recap_prompt(assistant.cfg, span_of(line))
+                elif sch_t(line):
+                    line = scheduling_prompt(line, assistant.cfg)
+                elif pr_t(line):
+                    line = pr_prompt(str(assistant.sessions.cwd), assistant.cfg)
+                elif _comp.use_name(line):
+                    code = _comp.get(_comp.use_name(line))
+                    if not code:
+                        print(f"jarvis> No saved component called {_comp.use_name(line)}."); continue
+                    line = _comp.use_prompt(_comp.use_name(line), code, line)
         STOP_FILE.unlink(missing_ok=True)
         stripper = TagStripper()
         print("jarvis> ", end="", flush=True)
@@ -269,11 +303,17 @@ def main() -> None:
         threading.Thread(target=brief, daemon=True).start()
 
     # proactive nudges + reminders (#16): idle-only, rate-limited; nudges opt-in via config
+    _idle = lambda: (not brain.busy and bus.state == "idle"
+                     and not (speaker and speaker.speaking))
     nudges = NudgeEngine(
-        cfg, bus, speaker, sessions,
-        is_idle=lambda: (not brain.busy and bus.state == "idle"
-                         and not (speaker and speaker.speaking)),
+        cfg, bus, speaker, sessions, is_idle=_idle,
         address_as=cfg.get("address_as") or "sir").start()
+
+    # scheduled routines (#54): fire "every weekday at 9, brief me" style schedules when due
+    from .schedules import ScheduleEngine
+    schedules_engine = ScheduleEngine(
+        bus, run=lambda instr: assistant.handle_input(instr, source="schedule"),
+        is_idle=_idle).start()
 
     # wait until the window closes or shutdown is requested
     def watch_window():
@@ -291,6 +331,8 @@ def main() -> None:
             voice.stop()
         if nudges:
             nudges.stop()
+        if schedules_engine:
+            schedules_engine.stop()
         if speaker:
             speaker.stop()
         if tray:

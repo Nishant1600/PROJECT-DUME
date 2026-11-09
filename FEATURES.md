@@ -113,22 +113,58 @@ The ideas that were on the horizon are built:
 | 49 | **Zero-cloud fallback** ✅ | Trivia answered locally with no Claude call; if the network drops, a local Ollama model (or built-ins) still replies (`jarvis.offline_brain`). |
 | 50 | **Usage radar** ✅ | *"Usage"* → how today compares to my recent average and how close this session is to rotating (`jarvis.usage`). |
 
-## 💡 Exploring (achievable, not yet built)
+## ✅ Phase 3 — now shipping (51–70)
 
-Fresh ideas on the table — small, local, and within reach of the current design.
+Everything from the last horizon is built, plus reliability, studies and dev depth. All unit-tested.
 
-| Idea | What it would do |
-|:--|:--|
-| **Scheduled routines** | *"Every weekday at nine, brief me"* — named routines on a timer. |
-| **Train your own wake word** | A guided flow to teach JARVIS a brand-new trigger phrase. |
-| **Offline screen sense** | A small local vision model reads the screen when you're off the grid. |
-| **Live meeting notetaker** | Transcribe and summarise a call *as it happens*, not just afterwards. |
-| **Reach your phone** | Push a nudge, a brief or a finished job to your phone. |
-| **Secure form-fill vault** | An opt-in, encrypted store of profile details (never passwords) to speed up forms. |
+**Staying alive & honest**
+
+| # | Feature | What it does |
+|:--:|:--|:--|
+| 51 | **Auth watchdog** ✅ | Tracks the headless Claude sign-in's expiry, notices auth failures, and tells me to run `claude setup-token` *before* the always-on brain goes quiet (`jarvis.authwatch`). |
+| 52 | **Self health-check** ✅ | *"Are you okay?"* checks mic, TTS, GPU, the CLI, connectors, disk and sign-in, and reports what needs attention in one spoken line (`jarvis.healthcheck`). |
+| 53 | **Crash watchdog** ✅ | Supervises the app and relaunches it on an unexpected exit, with exponential backoff and a crash-loop guard, logged to `logs/watchdog.log` (`jarvis.watchdog`). |
+| 54 | **Scheduled routines** ✅ | *"Brief me every weekday at nine"* — named instructions on a timer (daily / weekdays / weekly / interval), fired when idle (`jarvis.schedules`). |
+
+**Studies**
+
+| # | Feature | What it does |
+|:--:|:--|:--|
+| 55 | **Study tutor** ✅ | *"Teach me &lt;topic&gt;"* — explains it, then saves revision notes to a personal knowledge base (and Notion when connected) (`jarvis.tutor` / `jarvis.studykb`). |
+| 56 | **Revision mode** ✅ | *"Quiz me"* — spaced-repetition questioning from my own saved notes, with SM-2 scheduling (`jarvis.revision`). |
+| 57 | **Live notetaker** ✅ | *"Take notes"* keeps a timestamped transcript; *"stop taking notes"* turns it into a summary with decisions and action items (`jarvis.notetaker`). |
+| 58 | **Agenda board** ✅ | *"What's on my board?"* — a glanceable view of deadlines, schedules and reminders, spoken and on the HUD (`jarvis.agenda`). |
+
+**Day-to-day**
+
+| # | Feature | What it does |
+|:--:|:--|:--|
+| 59 | **Daily & weekly recap** ✅ | *"Recap my week"* — what got done and what's still open, spoken and saved to Notion (`jarvis.recap`). |
+| 60 | **Smart scheduling** ✅ | *"Find me an hour tomorrow for revision"* — proposes a real free slot and creates the event after I confirm (`jarvis.scheduling`). |
+| 61 | **Reach your phone** ✅ | Push a brief or a finished job to my phone via ntfy / Pushover / Telegram — *"send that to my phone"* (`jarvis.push`). |
+| 62 | **Secure form-fill vault** ✅ | Profile details (never passwords), encrypted at rest with Windows DPAPI, to help fill forms faster (`jarvis.vault`). |
+| 63 | **Multilingual mode** ✅ | *"Speak in Hindi"* flips both listening and speaking language on command (`jarvis.lang`). |
+
+**Website / development**
+
+| # | Feature | What it does |
+|:--:|:--|:--|
+| 64 | **Accessibility audit** ✅ | A dependency-free a11y pass — alt text, labels, landmarks, zoom, WCAG contrast — the sibling of the SEO audit (`jarvis.a11y`). |
+| 65 | **Performance budget** ✅ | Local page-weight check: oversized images, render-blocking scripts, layout-shift risks, against a budget (`jarvis.perf`). |
+| 66 | **Your component library** ✅ | Save your own UI blocks and reuse them — *"build it with my hero section"* (`jarvis.components`). |
+| 67 | **Full PR flow** ✅ | *"Open a PR"* — branch → commit → push → `gh pr create` → CI summary, confirming before each outward step (`jarvis.prflow`). |
+
+**Voice & interaction**
+
+| # | Feature | What it does |
+|:--:|:--|:--|
+| 68 | **Train your own wake word** ✅ | A guided openWakeWord flow: plans the job, synthesises samples, and walks me to a trained `.onnx` (`jarvis.waketrain`). |
+| 69 | **Offline screen sense** ✅ | Answers "what's on my screen / is there an error" locally from window text when off-grid — optional local vision model (`jarvis.screensense`). |
+| 70 | **Follow-up memory** ✅ | After a status briefing, *"read the one from the bank"* resolves to the right sender without re-asking (`jarvis.followup`). |
 
 ---
 
 <div align="center">
 <sub>Everything above is shipping; Gmail, Notion, Calendar and Drive are connected.</sub>
-<br/><sub>Next up: <b>scheduled routines · your own wake word · offline screen sense</b>.</sub>
+<br/><sub>70 features built — reliability, studies, day-to-day, dev and voice, every unit tested.</sub>
 </div>
